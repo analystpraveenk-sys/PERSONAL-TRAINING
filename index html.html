@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#171D1B" />
+<title>Iron & Thali — Praveen's Build</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="icon" href="icons/icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin:0; background:#171D1B; color:#F2EFE9; font-family:'Inter',sans-serif; padding-bottom:40px; }
+  ::-webkit-scrollbar { display:none; }
+  .header { padding:24px 20px 16px; border-bottom:1px solid #262E2B; }
+  .eyebrow { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#E8A33D; font-family:'Oswald',sans-serif; }
+  .title { font-size:24px; font-weight:700; font-family:'Oswald',sans-serif; margin-top:4px; }
+  .subtitle { font-size:12px; color:#8A9490; margin-top:2px; }
+  .tabs { display:flex; gap:6px; padding:14px 16px; overflow-x:auto; }
+  .tab-btn { padding:9px 14px; border-radius:8px; border:none; cursor:pointer; font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:0.5px; text-transform:uppercase; background:transparent; color:#B7BFB9; font-weight:600; white-space:nowrap; }
+  .tab-btn.active { background:#E8A33D; color:#171D1B; }
+  .content { padding:4px 18px; }
+  .rings-card { display:flex; justify-content:space-around; background:#1E2622; border-radius:16px; padding:20px 10px; margin-bottom:18px; }
+  .ring-wrap { display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .ring { width:78px; height:78px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .ring-inner { width:62px; height:62px; border-radius:50%; background:#171D1B; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .ring-val { font-family:'JetBrains Mono',monospace; font-size:14px; color:#F2EFE9; font-weight:700; }
+  .ring-target { font-family:'JetBrains Mono',monospace; font-size:9px; color:#8A9490; }
+  .ring-label { font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#8A9490; }
+  .section-label { font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:1px; text-transform:uppercase; color:#8A9490; margin:18px 0 8px; }
+  .item-row { display:flex; align-items:center; gap:12px; padding:12px 14px; background:#1E2622; border-radius:12px; margin-bottom:8px; cursor:pointer; border:1px solid transparent; }
+  .item-row.checked-meal { border-color:#8FA876; }
+  .item-row.checked-ex { border-color:#E8A33D; }
+  .item-row input[type=checkbox] { width:18px; height:18px; accent-color:#8FA876; flex-shrink:0; }
+  .item-row.ex input[type=checkbox] { accent-color:#E8A33D; }
+  .item-title { font-size:13px; font-weight:600; color:#F2EFE9; }
+  .item-sub { font-size:12px; color:#8A9490; margin-top:2px; }
+  .item-macro { font-family:'JetBrains Mono',monospace; font-size:11px; color:#E8A33D; text-align:right; white-space:nowrap; }
+  .rest-note { padding:14px; background:#1E2622; border-radius:12px; color:#8A9490; font-size:13px; }
+  .week-picker { display:flex; gap:8px; margin-bottom:16px; }
+  .week-btn { flex:1; padding:8px 0; border-radius:8px; border:none; cursor:pointer; background:#1E2622; color:#B7BFB9; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; }
+  .week-btn.active { background:#E8A33D; color:#171D1B; }
+  .day-card { margin-bottom:16px; background:#1E2622; border-radius:14px; overflow:hidden; }
+  .day-card-head { padding:10px 14px; background:#212A26; }
+  .day-card-head.meals-head { display:flex; justify-content:space-between; align-items:center; }
+  .day-name { font-family:'Oswald',sans-serif; font-size:15px; font-weight:600; }
+  .day-focus { font-size:12px; color:#8A9490; }
+  .day-body { padding:6px 14px 12px; }
+  .ex-line { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #262E2B; font-size:13px; }
+  .ex-load { font-family:'JetBrains Mono',monospace; color:#E8A33D; }
+  .note-block { font-size:12px; color:#8A9490; line-height:1.6; padding:8px 4px; }
+  .meal-slot { padding:8px 0; border-bottom:1px solid #262E2B; }
+  .meal-slot-name { font-size:12px; font-weight:600; color:#8FA876; }
+  .meal-slot-items { font-size:13px; color:#F2EFE9; margin-top:2px; }
+  .meal-slot-macro { font-size:11px; color:#8A9490; margin-top:2px; font-family:'JetBrains Mono',monospace; }
+  .grocery-card { margin-bottom:14px; background:#1E2622; border-radius:14px; padding:12px 16px; }
+  .grocery-cat { font-family:'Oswald',sans-serif; font-size:14px; color:#E8A33D; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px; }
+  .grocery-item { font-size:13px; padding:4px 0; color:#F2EFE9; }
+  .supp-card { background:#1E2622; border-radius:14px; padding:16px 18px; line-height:1.7; font-size:13.5px; }
+  .supp-h { font-family:'Oswald',sans-serif; font-size:16px; color:#E8A33D; margin-bottom:10px; }
+  .supp-h.mt { margin:16px 0 10px; }
+  .small-note { color:#8A9490; font-size:12px; }
+  .progress-card { background:#1E2622; border-radius:14px; padding:16px 18px; margin-bottom:16px; }
+  .progress-label { font-family:'Oswald',sans-serif; font-size:14px; color:#8A9490; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px; }
+  .weight-row { display:flex; gap:8px; }
+  .weight-input { flex:1; padding:10px 12px; border-radius:8px; border:1px solid #2A322F; background:#171D1B; color:#F2EFE9; font-size:14px; font-family:'JetBrains Mono',monospace; }
+  .weight-save { padding:10px 18px; border-radius:8px; border:none; background:#E8A33D; color:#171D1B; font-weight:700; cursor:pointer; }
+  .hist-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #262E2B; font-size:13px; }
+  .hist-date { color:#8A9490; }
+  .hist-val { font-family:'JetBrains Mono',monospace; }
+  .install-banner { display:none; margin:0 18px 14px; padding:12px 14px; background:#1E2622; border:1px solid #E8A33D; border-radius:12px; font-size:13px; }
+  .install-btn { margin-top:8px; padding:8px 14px; border-radius:8px; border:none; background:#E8A33D; color:#171D1B; font-weight:700; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">Iron & Thali — Praveen's Build</div>
+  <div class="title">6-Month Transformation</div>
+  <div class="subtitle" id="headerSub">Target: Dec 25, 2026</div>
+</div>
+
+<div id="installBanner" class="install-banner">
+  Install this on your home screen for the full app experience.
+  <br><button class="install-btn" id="installBtn">Install App</button>
+</div>
+
+<div class="tabs" id="tabs"></div>
+<div class="content" id="content"></div>
+
+<script>
+/* ---------------- DATA ---------------- */
+const TARGETS = { calories: 2950, protein: 160, carbs: 398, fat: 80 };
+
+const WORKOUT_DAYS = [
+  { day:"Monday", tag:"Push A", focus:"Chest & Triceps", color:"#E8A33D", exercises:[
+    {name:"Barbell Bench Press", w1:"4x8 @RPE7", w2:"4x8 @RPE8", w3:"4x6 @RPE8-9", w4:"3x8 (technique/deload)"},
+    {name:"Incline Dumbbell Press", w1:"3x10", w2:"3x10", w3:"4x8", w4:"3x10"},
+    {name:"Chest Dip / Machine Dip", w1:"3x10", w2:"3x10", w3:"3x8", w4:"2x10"},
+    {name:"Cable Fly", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"},
+    {name:"Overhead Rope Triceps Ext.", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
+    {name:"Triceps Pushdown", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"} ]},
+  { day:"Tuesday", tag:"Pull A", focus:"Back & Biceps", color:"#4A7C7C", exercises:[
+    {name:"Deadlift", w1:"4x5 @RPE7", w2:"4x5 @RPE8", w3:"5x3 @RPE9", w4:"3x5 (light/technique)"},
+    {name:"Lat Pulldown / Pull-up", w1:"4x10", w2:"4x10", w3:"4x8", w4:"3x10"},
+    {name:"Barbell Row", w1:"3x10", w2:"3x10", w3:"4x8", w4:"3x10"},
+    {name:"Seated Cable Row", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
+    {name:"Barbell Curl", w1:"3x10", w2:"3x10", w3:"3x8", w4:"2x10"},
+    {name:"Hammer Curl", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"} ]},
+  { day:"Wednesday", tag:"Legs A", focus:"Quads & Core", color:"#8FA876", exercises:[
+    {name:"Back Squat", w1:"4x8 @RPE7", w2:"4x8 @RPE8", w3:"4x6 @RPE8-9", w4:"3x8 (deload)"},
+    {name:"Leg Press", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
+    {name:"Walking Lunges", w1:"3x12/leg", w2:"3x12/leg", w3:"3x10/leg", w4:"2x12/leg"},
+    {name:"Leg Extension", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"},
+    {name:"Hanging Leg Raise", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"},
+    {name:"Plank", w1:"3x45s", w2:"3x45s", w3:"3x60s", w4:"2x45s"} ]},
+  { day:"Thursday", tag:"Upper", focus:"Chest, Back, Shoulders & Arms", color:"#D98552", exercises:[
+    {name:"Incline Barbell Press", w1:"4x10 @RPE7", w2:"4x10 @RPE8", w3:"4x8 @RPE8-9", w4:"3x10 (deload)"},
+    {name:"Lat Pulldown", w1:"4x10", w2:"4x10", w3:"4x8", w4:"3x10"},
+    {name:"Seated DB Shoulder Press", w1:"3x10", w2:"3x10", w3:"3x8", w4:"2x10"},
+    {name:"Chest-Supported Row", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
+    {name:"Cable Lateral Raise", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"},
+    {name:"EZ Bar Curl", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
+    {name:"Rope Triceps Pushdown", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"} ]},
+  { day:"Friday", tag:"Lower", focus:"Hamstrings, Glutes, Quads & Calves", color:"#8FA876", exercises:[
+    {name:"Romanian Deadlift", w1:"4x10 @RPE7", w2:"4x10 @RPE8", w3:"4x8 @RPE8-9", w4:"3x10 (deload)"},
+    {name:"Leg Press", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
+    {name:"Walking Lunges", w1:"3x12/leg", w2:"3x12/leg", w3:"3x10/leg", w4:"2x12/leg"},
+    {name:"Lying Leg Curl", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"},
+    {name:"Hip Thrust", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
+    {name:"Standing Calf Raise", w1:"4x15", w2:"4x15", w3:"4x12", w4:"3x15"},
+    {name:"Seated Calf Raise", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"} ]},
+  { day:"Saturday", tag:"Arms + Weak Point", focus:"Biceps, Triceps & Shoulders", color:"#A87C9E", exercises:[
+    {name:"Barbell Curl", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
+    {name:"Hammer Curl", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
+    {name:"Close Grip Bench Press", w1:"3x10 @RPE7", w2:"3x10 @RPE8", w3:"3x8", w4:"2x10"},
+    {name:"Overhead Triceps Extension", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
+    {name:"Cable Lateral Raise (wide)", w1:"3x20", w2:"3x20", w3:"3x15", w4:"2x20"},
+    {name:"Face Pulls", w1:"3x15", w2:"3x15", w3:"3x15", w4:"2x15"} ]},
+  { day:"Sunday", tag:"Rest", focus:"Recovery — walk, stretch, mobility", color:"#6B6459", exercises:[] }
+];
+
+const MEAL_DAYS = [
+  { day:"Day 1", style:"Veg", meals:[
+    {slot:"Breakfast", items:"3 whole eggs + 2 egg whites bhurji (little oil), 2 multigrain roti, 1 bowl curd", cal:620,p:38,c:45,f:28},
+    {slot:"Mid-Morning", items:"1 banana + 2 tbsp peanut butter", cal:320,p:9,c:32,f:17},
+    {slot:"Lunch", items:"1.5 cup rice, 1 cup rajma/dal, 150g paneer bhurji, cucumber-tomato salad, 1 cup curd", cal:850,p:45,c:100,f:24},
+    {slot:"Evening", items:"1 scoop whey in water + 1 handful roasted chana", cal:320,p:32,c:25,f:6},
+    {slot:"Dinner", items:"2 roti, 200g soya chunk curry, sautéed spinach, 1 bowl curd", cal:620,p:38,c:60,f:18} ]},
+  { day:"Day 2", style:"Non-Veg", meals:[
+    {slot:"Breakfast", items:"Oats (60g dry) cooked in milk with banana + 6 almonds", cal:560,p:22,c:75,f:16},
+    {slot:"Mid-Morning", items:"Sprouts chaat (1.5 cup) with lemon", cal:260,p:14,c:38,f:4},
+    {slot:"Lunch", items:"1.5 cup rice, 200g grilled chicken breast curry, 1 cup dal, salad, 1 cup curd", cal:880,p:62,c:85,f:20},
+    {slot:"Evening", items:"1 scoop whey + 1 apple", cal:300,p:27,c:30,f:4},
+    {slot:"Dinner", items:"2 roti, 150g chicken/egg curry, mixed veg sabzi, 1 bowl curd", cal:630,p:42,c:55,f:20} ]},
+  { day:"Day 3", style:"Veg", meals:[
+    {slot:"Breakfast", items:"4 egg whites + 1 whole egg omelette, 2 besan chilla, 1 bowl curd", cal:600,p:40,c:40,f:26},
+    {slot:"Mid-Morning", items:"1 bowl fruit chaat (papaya, guava, orange)", cal:220,p:3,c:50,f:1},
+    {slot:"Lunch", items:"2 roti + 1 cup rice, kadhi + 150g paneer tikka, salad, buttermilk", cal:830,p:44,c:95,f:24},
+    {slot:"Evening", items:"1 scoop whey + 4 walnuts", cal:300,p:28,c:12,f:15},
+    {slot:"Dinner", items:"1.5 cup rice, 1 cup moong dal, lauki sabzi, 1 bowl curd", cal:600,p:30,c:90,f:10} ]},
+  { day:"Day 4", style:"Non-Veg", meals:[
+    {slot:"Breakfast", items:"3-egg masala omelette, 2 multigrain toast, 1 glass buttermilk", cal:580,p:34,c:45,f:26},
+    {slot:"Mid-Morning", items:"1 banana + handful roasted makhana", cal:260,p:6,c:42,f:8},
+    {slot:"Lunch", items:"1.5 cup rice, 200g fish curry, 1 cup dal, salad, curd", cal:850,p:55,c:90,f:20},
+    {slot:"Evening", items:"1 scoop whey + 1 pear", cal:300,p:27,c:32,f:3},
+    {slot:"Dinner", items:"2 roti, 150g chicken keema with peas, salad, curd", cal:640,p:42,c:55,f:22} ]},
+  { day:"Day 5", style:"Veg", meals:[
+    {slot:"Breakfast", items:"Moong dal chilla (3) with paneer stuffing, 1 bowl curd", cal:590,p:36,c:50,f:22},
+    {slot:"Mid-Morning", items:"1 bowl sprouts + roasted peanuts (20g)", cal:280,p:15,c:25,f:12},
+    {slot:"Lunch", items:"1.5 cup rice, chole (1 cup), 150g paneer bhurji, salad, curd", cal:870,p:46,c:100,f:24},
+    {slot:"Evening", items:"1 scoop whey + 1 orange", cal:300,p:27,c:30,f:3},
+    {slot:"Dinner", items:"2 roti, dal makhani (light), bhindi sabzi, curd", cal:610,p:32,c:65,f:16} ]},
+  { day:"Day 6", style:"Non-Veg", meals:[
+    {slot:"Breakfast", items:"4 egg whites + 2 whole eggs bhurji, 2 roti, curd", cal:610,p:42,c:42,f:26},
+    {slot:"Mid-Morning", items:"1 banana + peanut butter (1.5 tbsp)", cal:290,p:8,c:32,f:13},
+    {slot:"Lunch", items:"1.5 cup rice, 200g grilled chicken, dal, salad, curd", cal:870,p:60,c:85,f:22},
+    {slot:"Evening", items:"1 scoop whey + roasted chana (20g)", cal:310,p:30,c:22,f:8},
+    {slot:"Dinner", items:"2 roti, egg curry (3 eggs), palak sabzi, curd", cal:640,p:38,c:55,f:24} ]},
+  { day:"Day 7", style:"Veg (light/cheat-friendly)", meals:[
+    {slot:"Breakfast", items:"Vegetable daliya (broken wheat) with curd, 6 almonds", cal:560,p:20,c:80,f:14},
+    {slot:"Mid-Morning", items:"1 bowl mixed fruit", cal:200,p:2,c:46,f:1},
+    {slot:"Lunch", items:"1.5 cup rice, sambar, 150g paneer sabzi, salad, curd", cal:830,p:40,c:100,f:22},
+    {slot:"Evening", items:"1 scoop whey in milk", cal:340,p:32,c:28,f:8},
+    {slot:"Dinner", items:"Vegetable khichdi (1.5 cup) with ghee (1 tsp), curd", cal:600,p:24,c:90,f:14} ]}
+];
+
+const GROCERY = [
+  { cat:"Protein", items:["Eggs — 3 dozen/week","Chicken breast — 1.2 kg","Fish (rohu/pomfret) — 400g","Paneer — 700g","Soya chunks — 250g","Curd/Dahi — 2 kg","Whey protein — as per dose","Buttermilk (chaas) — 1 L"] },
+  { cat:"Carbs", items:["Rice — 3 kg","Multigrain atta — 2 kg","Rolled oats — 500g","Broken wheat (daliya) — 500g","Bananas — 14","Sweet potato — 1 kg","Besan — 500g"] },
+  { cat:"Legumes", items:["Moong dal — 500g","Rajma — 500g","Chole/kabuli chana — 500g","Sprouts (moong/matki) — 500g","Dal makhani mix — 250g"] },
+  { cat:"Fats & Nuts", items:["Peanut butter — 1 jar","Almonds — 250g","Walnuts — 100g","Makhana — 200g","Cold-pressed groundnut/mustard oil — 500ml","Ghee — 250g"] },
+  { cat:"Veggies & Fruit", items:["Spinach, bhindi, lauki, mixed veg — assorted 3-4 kg","Cucumber & tomato for salad","Papaya, guava, orange, apple, pear — assorted"] },
+  { cat:"Gut-friendly extras", items:["Chia/flax seeds — 100g (soak, don't overdo)","Ajwain & jeera (for digestion)","Lemons — 6","Isabgol/psyllium husk — 1 pack (only if needed)"] }
+];
+
+/* ---------------- STATE ---------------- */
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+const DATE = todayISO();
+const dayIndex = new Date().getDay();
+const mealCycleIndex = (dayIndex + 6) % 7;
+const todaysMeals = MEAL_DAYS[mealCycleIndex];
+const workoutDayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const todaysWorkout = WORKOUT_DAYS.find(w => w.day === workoutDayNames[dayIndex]);
+
+function loadLog(){
+  try {
+    const raw = localStorage.getItem("log:"+DATE);
+    return raw ? JSON.parse(raw) : { meals:{}, workout:{}, week:1 };
+  } catch(e){ return { meals:{}, workout:{}, week:1 }; }
+}
+function saveLog(log){ localStorage.setItem("log:"+DATE, JSON.stringify(log)); }
+function loadWeightHistory(){
+  try { const raw = localStorage.getItem("weight-history"); return raw ? JSON.parse(raw) : []; }
+  catch(e){ return []; }
+}
+function saveWeightHistory(h){ localStorage.setItem("weight-history", JSON.stringify(h)); }
+
+let log = loadLog();
+let weightHistory = loadWeightHistory();
+let currentTab = "today";
+
+function macroTotals(mealDay){
+  return mealDay.meals.reduce((a,m)=>({cal:a.cal+m.cal,p:a.p+m.p,c:a.c+m.c,f:a.f+m.f}),{cal:0,p:0,c:0,f:0});
+}
+function consumedToday(){
+  return todaysMeals.meals.reduce((a,m)=>{
+    if(log.meals[m.slot]){ a.cal+=m.cal; a.p+=m.p; a.c+=m.c; a.f+=m.f; }
+    return a;
+  },{cal:0,p:0,c:0,f:0});
+}
+
+/* ---------------- RENDER ---------------- */
+const TABS = [["today","Today"],["workout","Workout"],["meals","Meals"],["grocery","Grocery"],["supplements","Supplements"],["progress","Progress"]];
+
+function renderTabs(){
+  const el = document.getElementById("tabs");
+  el.innerHTML = TABS.map(([key,label]) =>
+    `<button class="tab-btn ${currentTab===key?'active':''}" data-tab="${key}">${label}</button>`
+  ).join("");
+  el.querySelectorAll(".tab-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{ currentTab = btn.dataset.tab; render(); });
+  });
+}
+
+function ring(label, value, target, color, unit){
+  const pct = target ? Math.min(Math.round((value/target)*100),100) : 0;
+  return `<div class="ring-wrap">
+    <div class="ring" style="background:conic-gradient(${color} ${pct*3.6}deg, #2A322F ${pct*3.6}deg)">
+      <div class="ring-inner">
+        <span class="ring-val">${value}</span>
+        <span class="ring-target">/${target}${unit}</span>
+      </div>
+    </div>
+    <span class="ring-label">${label}</span>
+  </div>`;
+}
+
+function renderToday(){
+  const consumed = consumedToday();
+  const weekKey = "w"+log.week;
+  let html = `<div class="rings-card">
+    ${ring("Cal",consumed.cal,TARGETS.calories,"#E8A33D","")}
+    ${ring("Protein",consumed.p,TARGETS.protein,"#8FA876","g")}
+    ${ring("Carbs",consumed.c,TARGETS.carbs,"#4A7C7C","g")}
+    ${ring("Fat",consumed.f,TARGETS.fat,"#C97B63","g")}
+  </div>
+  <div class="section-label">Tap meals as you eat them</div>`;
+  todaysMeals.meals.forEach(m=>{
+    const checked = !!log.meals[m.slot];
+    html += `<label class="item-row ${checked?'checked-meal':''}" data-meal="${m.slot}">
+      <input type="checkbox" ${checked?'checked':''} data-meal-cb="${m.slot}" />
+      <div style="flex:1"><div class="item-title">${m.slot}</div><div class="item-sub">${m.items}</div></div>
+      <div class="item-macro">${m.cal}kcal<br>${m.p}P</div>
+    </label>`;
+  });
+  html += `<div class="section-label">Today's lifts — ${todaysWorkout.tag}</div>`;
+  if(todaysWorkout.exercises.length===0){
+    html += `<div class="rest-note">Rest day. Walk, stretch, hydrate.</div>`;
+  } else {
+    todaysWorkout.exercises.forEach(ex=>{
+      const checked = !!log.workout[ex.name];
+      html += `<label class="item-row ex ${checked?'checked-ex':''}">
+        <input type="checkbox" ${checked?'checked':''} data-ex-cb="${ex.name}" />
+        <div style="flex:1"><div class="item-title">${ex.name}</div></div>
+        <div class="ex-load">${ex[weekKey]}</div>
+      </label>`;
+    });
+  }
+  return html;
+}
+
+function renderWorkout(){
+  let html = `<div class="week-picker">`;
+  [1,2,3,4].forEach(w=>{
+    html += `<button class="week-btn ${log.week===w?'active':''}" data-week="${w}">Week ${w}</button>`;
+  });
+  html += `</div>`;
+  WORKOUT_DAYS.forEach(d=>{
+    html += `<div class="day-card">
+      <div class="day-card-head" style="border-left:4px solid ${d.color}">
+        <div class="day-name">${d.day} — ${d.tag}</div>
+        <div class="day-focus">${d.focus}</div>
+      </div>`;
+    if(d.exercises.length>0){
+      html += `<div class="day-body">`;
+      const weekKey = "w"+log.week;
+      d.exercises.forEach(ex=>{
+        html += `<div class="ex-line"><span>${ex.name}</span><span class="ex-load">${ex[weekKey]}</span></div>`;
+      });
+      html += `</div>`;
+    }
+    html += `</div>`;
+  });
+  html += `<div class="note-block">Progression: add 2.5–5kg once you hit the top of a rep range with clean form. Week 4 is a lighter technique week — repeat the 4-week block at your new working weights for months 2–6. Fit sessions around shift timing: lift before your 9am start, or straight after an 8pm close — never skip more than 2 days between sessions on the same muscle group.</div>`;
+  return html;
+}
+
+function renderMeals(){
+  let html = "";
+  MEAL_DAYS.forEach(d=>{
+    const tot = macroTotals(d);
+    html += `<div class="day-card">
+      <div class="day-card-head meals-head">
+        <div><div class="day-name">${d.day}</div><div class="item-sub">${d.style}</div></div>
+        <div class="item-macro">${tot.cal}kcal<br>P${tot.p} C${tot.c} F${tot.f}</div>
+      </div>
+      <div class="day-body">`;
+    d.meals.forEach(m=>{
+      html += `<div class="meal-slot">
+        <div class="meal-slot-name">${m.slot}</div>
+        <div class="meal-slot-items">${m.items}</div>
+        <div class="meal-slot-macro">${m.cal}kcal · P${m.p} C${m.c} F${m.f}</div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+  html += `<div class="note-block">This 7-day cycle repeats every week for all 6 months. Every 4 weeks, once your weight is trending up, add 100–150 kcal (extra roti, rice, or a banana) to keep building muscle. For gut comfort: 1 bowl curd/buttermilk daily, chew slowly, keep fried food to twice a week max, and drink 3.5–4L water daily to prevent constipation and fissures from higher protein intake.</div>`;
+  return html;
+}
+
+function renderGrocery(){
+  let html = "";
+  GROCERY.forEach(g=>{
+    html += `<div class="grocery-card"><div class="grocery-cat">${g.cat}</div>`;
+    g.items.forEach(it=>{ html += `<div class="grocery-item">• ${it}</div>`; });
+    html += `</div>`;
+  });
+  return html;
+}
+
+function renderSupplements(){
+  return `<div class="supp-card">
+    <div class="supp-h">Creatine</div>
+    <p>Yes — creatine monohydrate is safe, cheap, and well-proven for muscle building. Take <b>5g/day, every day</b> (including rest days), any time — no loading phase needed. Mix in water, milk, or your shake.</p>
+    <p>Look for plain creatine monohydrate, ideally <b>Creapure-certified</b> for purity — MuscleBlaze, Avvatar, and ON's micronized creatine are all widely available in India at this standard. Avoid flavored "creatine blends" with extra fillers.</p>
+    <div class="supp-h mt">Whey Protein</div>
+    <p>Use it to close the gap when food alone can't hit 160g protein — <b>1–2 scoops (25–50g)</b> a day, e.g. one scoop mid-morning or post-workout. Brands like ON Gold Standard Whey, MuscleBlaze Biozyme, and Avvatar Whey are reliable in India — check the label for an FSSAI mark and, where possible, a third-party tested batch.</p>
+    <p class="small-note">Note: brand availability and formulations change often — before buying, do a quick check on current pricing/reviews since this list may not reflect the newest options.</p>
+    <div class="supp-h mt">Since you quit smoking</div>
+    <p>Nicely done staying off it for 6 months — that alone meaningfully improves recovery and muscle oxygenation. Keep beer/wine occasional (1–2 drinks, once a week max) since alcohol blunts protein synthesis and adds empty calories that work against your surplus.</p>
+  </div>`;
+}
+
+function renderProgress(){
+  let html = `<div class="progress-card">
+    <div class="progress-label">Log today's weight</div>
+    <div class="weight-row">
+      <input type="number" placeholder="73.0" id="weightInput" class="weight-input" />
+      <button class="weight-save" id="weightSaveBtn">Save</button>
+    </div>
+  </div>
+  <div class="progress-card">
+    <div class="progress-label">History</div>`;
+  if(weightHistory.length===0){
+    html += `<div class="small-note">No entries yet — log your weight weekly (same day, same time, e.g. every Monday morning) to track real trends.</div>`;
+  } else {
+    [...weightHistory].reverse().forEach(w=>{
+      html += `<div class="hist-row"><span class="hist-date">${w.date}</span><span class="hist-val">${w.weight} kg</span></div>`;
+    });
+  }
+  html += `</div>`;
+  return html;
+}
+
+function render(){
+  renderTabs();
+  document.getElementById("headerSub").textContent =
+    `Target: Dec 25, 2026 · ${todaysWorkout.tag} day · ${todaysMeals.style} menu`;
+  const content = document.getElementById("content");
+  if(currentTab==="today") content.innerHTML = renderToday();
+  else if(currentTab==="workout") content.innerHTML = renderWorkout();
+  else if(currentTab==="meals") content.innerHTML = renderMeals();
+  else if(currentTab==="grocery") content.innerHTML = renderGrocery();
+  else if(currentTab==="supplements") content.innerHTML = renderSupplements();
+  else if(currentTab==="progress") content.innerHTML = renderProgress();
+
+  content.querySelectorAll("[data-meal-cb]").forEach(cb=>{
+    cb.addEventListener("change", ()=>{
+      const slot = cb.dataset.mealCb;
+      log.meals[slot] = !log.meals[slot];
+      saveLog(log);
+      render();
+    });
+  });
+  content.querySelectorAll("[data-ex-cb]").forEach(cb=>{
+    cb.addEventListener("change", ()=>{
+      const name = cb.dataset.exCb;
+      log.workout[name] = !log.workout[name];
+      saveLog(log);
+      render();
+    });
+  });
+  content.querySelectorAll("[data-week]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      log.week = parseInt(btn.dataset.week,10);
+      saveLog(log);
+      render();
+    });
+  });
+  const saveBtn = document.getElementById("weightSaveBtn");
+  if(saveBtn){
+    saveBtn.addEventListener("click", ()=>{
+      const val = parseFloat(document.getElementById("weightInput").value);
+      if(!val) return;
+      weightHistory = [...weightHistory.filter(w=>w.date!==DATE), {date:DATE, weight:val}]
+        .sort((a,b)=>a.date.localeCompare(b.date));
+      saveWeightHistory(weightHistory);
+      render();
+    });
+  }
+}
+
+render();
+
+/* ---------------- PWA install + service worker ---------------- */
+let deferredPrompt;
+window.addEventListener("beforeinstallprompt", (e)=>{
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById("installBanner").style.display = "block";
+});
+document.getElementById("installBtn").addEventListener("click", async ()=>{
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById("installBanner").style.display = "none";
+});
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("service-worker.js").catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
