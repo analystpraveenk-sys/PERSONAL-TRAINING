@@ -40,6 +40,10 @@
   .item-title { font-size:13px; font-weight:600; color:#F2EFE9; }
   .item-sub { font-size:12px; color:#8A9490; margin-top:2px; }
   .item-macro { font-family:'JetBrains Mono',monospace; font-size:11px; color:#E8A33D; text-align:right; white-space:nowrap; }
+  .video-link { display:inline-block; margin-top:4px; font-size:11px; color:#4A9CD8; text-decoration:none; font-weight:600; }
+  .video-link:active { opacity:0.7; }
+  .video-frame { position:relative; width:100%; padding-top:56.25%; margin-top:8px; border-radius:8px; overflow:hidden; }
+  .video-frame iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:0; }
   .rest-note { padding:14px; background:#1E2622; border-radius:12px; color:#8A9490; font-size:13px; }
   .week-picker { display:flex; gap:8px; margin-bottom:16px; }
   .week-btn { flex:1; padding:8px 0; border-radius:8px; border:none; cursor:pointer; background:#1E2622; color:#B7BFB9; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; }
@@ -101,7 +105,9 @@ const WORKOUT_DAYS = [
     {name:"Barbell Bench Press", w1:"4x8 @RPE7", w2:"4x8 @RPE8", w3:"4x6 @RPE8-9", w4:"3x8 (technique/deload)"},
     {name:"Incline Dumbbell Press", w1:"3x10", w2:"3x10", w3:"4x8", w4:"3x10"},
     {name:"Chest Dip / Machine Dip", w1:"3x10", w2:"3x10", w3:"3x8", w4:"2x10"},
+    {name:"Machine Chest Press", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
     {name:"Cable Fly", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"},
+    {name:"Skull Crushers (EZ Bar)", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
     {name:"Overhead Rope Triceps Ext.", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
     {name:"Triceps Pushdown", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"} ]},
   { day:"Tuesday", tag:"Pull A", focus:"Back & Biceps", color:"#4A7C7C", exercises:[
@@ -109,14 +115,18 @@ const WORKOUT_DAYS = [
     {name:"Lat Pulldown / Pull-up", w1:"4x10", w2:"4x10", w3:"4x8", w4:"3x10"},
     {name:"Barbell Row", w1:"3x10", w2:"3x10", w3:"4x8", w4:"3x10"},
     {name:"Seated Cable Row", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
+    {name:"Straight Arm Pulldown", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"},
     {name:"Barbell Curl", w1:"3x10", w2:"3x10", w3:"3x8", w4:"2x10"},
-    {name:"Hammer Curl", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"} ]},
+    {name:"Hammer Curl", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
+    {name:"Barbell Shrugs", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"} ]},
   { day:"Wednesday", tag:"Legs A", focus:"Quads & Core", color:"#8FA876", exercises:[
     {name:"Back Squat", w1:"4x8 @RPE7", w2:"4x8 @RPE8", w3:"4x6 @RPE8-9", w4:"3x8 (deload)"},
     {name:"Leg Press", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
     {name:"Walking Lunges", w1:"3x12/leg", w2:"3x12/leg", w3:"3x10/leg", w4:"2x12/leg"},
     {name:"Leg Extension", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"},
+    {name:"Seated Leg Curl", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"},
     {name:"Hanging Leg Raise", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"},
+    {name:"Russian Twist", w1:"3x20", w2:"3x20", w3:"3x20", w4:"2x20"},
     {name:"Plank", w1:"3x45s", w2:"3x45s", w3:"3x60s", w4:"2x45s"} ]},
   { day:"Thursday", tag:"Upper", focus:"Chest, Back, Shoulders & Arms", color:"#D98552", exercises:[
     {name:"Incline Barbell Press", w1:"4x10 @RPE7", w2:"4x10 @RPE8", w3:"4x8 @RPE8-9", w4:"3x10 (deload)"},
@@ -124,12 +134,14 @@ const WORKOUT_DAYS = [
     {name:"Seated DB Shoulder Press", w1:"3x10", w2:"3x10", w3:"3x8", w4:"2x10"},
     {name:"Chest-Supported Row", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
     {name:"Cable Lateral Raise", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"},
+    {name:"Rear Delt Fly", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"},
     {name:"EZ Bar Curl", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
     {name:"Rope Triceps Pushdown", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"} ]},
   { day:"Friday", tag:"Lower", focus:"Hamstrings, Glutes, Quads & Calves", color:"#8FA876", exercises:[
     {name:"Romanian Deadlift", w1:"4x10 @RPE7", w2:"4x10 @RPE8", w3:"4x8 @RPE8-9", w4:"3x10 (deload)"},
     {name:"Leg Press", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
     {name:"Walking Lunges", w1:"3x12/leg", w2:"3x12/leg", w3:"3x10/leg", w4:"2x12/leg"},
+    {name:"Leg Extension", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"},
     {name:"Lying Leg Curl", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"},
     {name:"Hip Thrust", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
     {name:"Standing Calf Raise", w1:"4x15", w2:"4x15", w3:"4x12", w4:"3x15"},
@@ -137,8 +149,10 @@ const WORKOUT_DAYS = [
   { day:"Saturday", tag:"Arms + Weak Point", focus:"Biceps, Triceps & Shoulders", color:"#A87C9E", exercises:[
     {name:"Barbell Curl", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
     {name:"Hammer Curl", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
+    {name:"Cable Curl", w1:"3x15", w2:"3x15", w3:"3x12", w4:"2x15"},
     {name:"Close Grip Bench Press", w1:"3x10 @RPE7", w2:"3x10 @RPE8", w3:"3x8", w4:"2x10"},
     {name:"Overhead Triceps Extension", w1:"3x12", w2:"3x12", w3:"3x10", w4:"2x12"},
+    {name:"Diamond Push-ups", w1:"3xAMRAP", w2:"3xAMRAP", w3:"3xAMRAP", w4:"2xAMRAP"},
     {name:"Cable Lateral Raise (wide)", w1:"3x20", w2:"3x20", w3:"3x15", w4:"2x20"},
     {name:"Face Pulls", w1:"3x15", w2:"3x15", w3:"3x15", w4:"2x15"} ]},
   { day:"Sunday", tag:"Rest", focus:"Recovery — walk, stretch, mobility", color:"#6B6459", exercises:[] }
@@ -224,6 +238,87 @@ let log = loadLog();
 let weightHistory = loadWeightHistory();
 let currentTab = "today";
 
+// Verified real YouTube video IDs — filled in progressively.
+// If an exercise/dish isn't in here yet, we fall back to a live search link.
+const VIDEO_IDS = {
+  "Barbell Bench Press": "Pp8rHcFVIYg",
+  "Incline Dumbbell Press": "VDU5bzE2qOE",
+  "Chest Dip / Machine Dip": "yN6Q1UI_xkE",
+  "Machine Chest Press": "pLofEAcfsO8",
+  "Cable Fly": "ovFc-5YdcXw",
+  "Skull Crushers (EZ Bar)": "GaK2da6B2zM",
+  "Overhead Rope Triceps Ext.": "GzmlxvSFE7A",
+  "Triceps Pushdown": "w_viR9hVi4A",
+  "Rope Triceps Pushdown": "w_viR9hVi4A",
+  "Deadlift": "ntr64W6ZWB0",
+  "Lat Pulldown / Pull-up": "Z_3xHwuO8Tk",
+  "Lat Pulldown": "Z_3xHwuO8Tk",
+  "Barbell Row": "rqTOAM8WoeM",
+  "Seated Cable Row": "EU7bOadUsNI",
+  "Straight Arm Pulldown": "eKJUJ2eFPUY",
+  "Barbell Curl": "KCH2RlxbIbo",
+  "Hammer Curl": "G7hy-AxQwcQ",
+  "Barbell Shrugs": "KbsQ1E8Hg0o",
+  "Back Squat": "8PMjqgR8Wa8",
+  "Leg Press": "cDGOn-yfKJA",
+  "Walking Lunges": "2MbSPOB24XQ",
+  "Leg Extension": "MXvSzXEBOTI",
+  "Seated Leg Curl": "t9sTSr-JYSs",
+  "Hanging Leg Raise": "-LHetdLNhjI",
+  "Russian Twist": "jjyR6Z1U4dA",
+  "Plank": "HaH4JvdBCfE",
+  "Incline Barbell Press": "O9x7xRhtA9Q",
+  "Seated DB Shoulder Press": "fuQpuu--bMI",
+  "Chest-Supported Row": "XLoIFFXjFyY",
+  "Cable Lateral Raise": "zpbm-xRHB6k",
+  "Cable Lateral Raise (wide)": "zpbm-xRHB6k",
+  "Rear Delt Fly": "p7YER_nABrI",
+  "EZ Bar Curl": "5NsFLGUf0Fo",
+  "Romanian Deadlift": "KN5vN3JskqI",
+  "Lying Leg Curl": "3gZm9wGTsEo",
+  "Hip Thrust": "S_uZP4UH6J0",
+  "Standing Calf Raise": "ndQc4mz4mBU",
+  "Seated Calf Raise": "I1uQtobaNRQ",
+  "Cable Curl": "5jxkRHU4spk",
+  "Close Grip Bench Press": "UYJsFzqdgK4",
+  "Overhead Triceps Extension": "GzmlxvSFE7A",
+  "Diamond Push-ups": "kGhDnFwMY3E",
+  "Face Pulls": "eQaSpG7aMYQ",
+};
+const RECIPE_VIDEO_IDS = {
+  "Egg bhurji": "1OdPf65aPJg",
+  "Besan chilla": "35xrnRaa1x4",
+  "Rajma": "nnvk38T-iq8",
+};
+
+function slugify(s){ return s.replace(/[^a-zA-Z0-9]/g,""); }
+
+function toggleVideo(uid, name, isMeal){
+  const box = document.getElementById("vidbox-"+uid);
+  if(!box) return;
+  if(box.style.display === "block"){
+    box.style.display = "none";
+    box.innerHTML = "";
+    return;
+  }
+  const map = isMeal ? RECIPE_VIDEO_IDS : VIDEO_IDS;
+  const id = map[name];
+  if(id){
+    box.innerHTML = `<div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/${id}" title="${name}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+  } else {
+    window.open(ytLink(name + (isMeal ? " recipe" : " proper form tutorial")), "_blank");
+    return;
+  }
+  box.style.display = "block";
+}
+
+function ytLink(query){
+  return "https://www.youtube.com/results?search_query=" + encodeURIComponent(query);
+}
+function dishName(items){
+  // use first few words of the items string as the recipe search term
+  return items.split(",")[0].split("(")[0].trim();
+}
 function macroTotals(mealDay){
   return mealDay.meals.reduce((a,m)=>({cal:a.cal+m.cal,p:a.p+m.p,c:a.c+m.c,f:a.f+m.f}),{cal:0,p:0,c:0,f:0});
 }
@@ -272,9 +367,14 @@ function renderToday(){
   <div class="section-label">Tap meals as you eat them</div>`;
   todaysMeals.meals.forEach(m=>{
     const checked = !!log.meals[m.slot];
+    const uid = "today-meal-"+slugify(m.slot);
+    const dish = dishName(m.items);
     html += `<label class="item-row ${checked?'checked-meal':''}" data-meal="${m.slot}">
       <input type="checkbox" ${checked?'checked':''} data-meal-cb="${m.slot}" />
-      <div style="flex:1"><div class="item-title">${m.slot}</div><div class="item-sub">${m.items}</div></div>
+      <div style="flex:1"><div class="item-title">${m.slot}</div><div class="item-sub">${m.items}</div>
+        <a class="video-link" href="javascript:void(0)" onclick="event.stopPropagation();event.preventDefault();toggleVideo('${uid}','${dish.replace(/'/g,"\\'")}',true)">▶ Watch recipe</a>
+        <div id="vidbox-${uid}" style="display:none"></div>
+      </div>
       <div class="item-macro">${m.cal}kcal<br>${m.p}P</div>
     </label>`;
   });
@@ -284,9 +384,13 @@ function renderToday(){
   } else {
     todaysWorkout.exercises.forEach(ex=>{
       const checked = !!log.workout[ex.name];
+      const uid = "today-ex-"+slugify(ex.name);
       html += `<label class="item-row ex ${checked?'checked-ex':''}">
         <input type="checkbox" ${checked?'checked':''} data-ex-cb="${ex.name}" />
-        <div style="flex:1"><div class="item-title">${ex.name}</div></div>
+        <div style="flex:1"><div class="item-title">${ex.name}</div>
+          <a class="video-link" href="javascript:void(0)" onclick="event.stopPropagation();event.preventDefault();toggleVideo('${uid}','${ex.name.replace(/'/g,"\\'")}',false)">▶ Watch form</a>
+          <div id="vidbox-${uid}" style="display:none"></div>
+        </div>
         <div class="ex-load">${ex[weekKey]}</div>
       </label>`;
     });
@@ -310,7 +414,12 @@ function renderWorkout(){
       html += `<div class="day-body">`;
       const weekKey = "w"+log.week;
       d.exercises.forEach(ex=>{
-        html += `<div class="ex-line"><span>${ex.name}</span><span class="ex-load">${ex[weekKey]}</span></div>`;
+        const uid = "wk-"+slugify(d.day)+"-"+slugify(ex.name);
+        html += `<div class="ex-line" style="flex-direction:column;align-items:flex-start;gap:2px;">
+          <div style="display:flex;justify-content:space-between;width:100%;"><span>${ex.name}</span><span class="ex-load">${ex[weekKey]}</span></div>
+          <a class="video-link" href="javascript:void(0)" onclick="toggleVideo('${uid}','${ex.name.replace(/'/g,"\\'")}',false)">▶ Watch form</a>
+          <div id="vidbox-${uid}" style="display:none;width:100%;"></div>
+        </div>`;
       });
       html += `</div>`;
     }
@@ -331,10 +440,14 @@ function renderMeals(){
       </div>
       <div class="day-body">`;
     d.meals.forEach(m=>{
+      const uid = "meal-"+slugify(d.day)+"-"+slugify(m.slot);
+      const dish = dishName(m.items);
       html += `<div class="meal-slot">
         <div class="meal-slot-name">${m.slot}</div>
         <div class="meal-slot-items">${m.items}</div>
         <div class="meal-slot-macro">${m.cal}kcal · P${m.p} C${m.c} F${m.f}</div>
+        <a class="video-link" href="javascript:void(0)" onclick="toggleVideo('${uid}','${dish.replace(/'/g,"\\'")}',true)">▶ Watch recipe</a>
+        <div id="vidbox-${uid}" style="display:none;"></div>
       </div>`;
     });
     html += `</div></div>`;
