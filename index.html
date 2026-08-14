@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -44,6 +44,12 @@
   .video-link:active { opacity:0.7; }
   .video-frame { position:relative; width:100%; padding-top:56.25%; margin-top:8px; border-radius:8px; overflow:hidden; }
   .video-frame iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:0; }
+  .weight-log-row { display:flex; gap:8px; margin-top:8px; padding-left:30px; }
+  .mini-input { flex:1; padding:8px 10px; border-radius:6px; border:1px solid #2A322F; background:#171D1B; color:#F2EFE9; font-size:13px; font-family:'JetBrains Mono',monospace; }
+  .pr-badge { font-size:10px; background:#E8A33D; color:#171D1B; padding:2px 7px; border-radius:10px; margin-left:6px; font-weight:700; vertical-align:middle; }
+  .session-stats { display:flex; justify-content:space-around; background:#1E2622; border-radius:16px; padding:16px 10px; margin-bottom:14px; }
+  .session-stat-val { font-family:'JetBrains Mono',monospace; font-size:20px; font-weight:700; }
+  .stat-select { width:100%; padding:10px 12px; border-radius:8px; border:1px solid #2A322F; background:#171D1B; color:#F2EFE9; font-size:14px; margin-bottom:10px; }
   .rest-note { padding:14px; background:#1E2622; border-radius:12px; color:#8A9490; font-size:13px; }
   .week-picker { display:flex; gap:8px; margin-bottom:16px; }
   .week-btn { flex:1; padding:8px 0; border-radius:8px; border:none; cursor:pointer; background:#1E2622; color:#B7BFB9; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; }
@@ -160,47 +166,47 @@ const WORKOUT_DAYS = [
 
 const MEAL_DAYS = [
   { day:"Day 1", style:"Veg", meals:[
-    {slot:"Breakfast", items:"3 whole eggs + 2 egg whites bhurji (little oil), 2 multigrain roti, 1 bowl curd", cal:620,p:38,c:45,f:28},
-    {slot:"Mid-Morning", items:"1 banana + 2 tbsp peanut butter", cal:320,p:9,c:32,f:17},
-    {slot:"Lunch", items:"1.5 cup rice, 1 cup rajma/dal, 150g paneer bhurji, cucumber-tomato salad, 1 cup curd", cal:850,p:45,c:100,f:24},
-    {slot:"Evening", items:"1 scoop whey in water + 1 handful roasted chana", cal:320,p:32,c:25,f:6},
-    {slot:"Dinner", items:"2 roti, 200g soya chunk curry, sautéed spinach, 1 bowl curd", cal:620,p:38,c:60,f:18} ]},
+    {slot:"Breakfast", items:"3 whole eggs + 2 egg whites bhurji (little oil), 2 multigrain roti, 1 bowl curd", cal:620,p:38,c:45,f:28, dish:"Egg bhurji"},
+    {slot:"Mid-Morning", items:"1 banana + 2 tbsp peanut butter", cal:320,p:9,c:32,f:17, dish:null},
+    {slot:"Lunch", items:"1.5 cup rice, 1 cup rajma/dal, 150g paneer bhurji, cucumber-tomato salad, 1 cup curd", cal:850,p:45,c:100,f:24, dish:"Rajma"},
+    {slot:"Evening", items:"1 scoop whey in water + 1 handful roasted chana", cal:320,p:32,c:25,f:6, dish:null},
+    {slot:"Dinner", items:"2 roti, 200g soya chunk curry, sautéed spinach, 1 bowl curd", cal:620,p:38,c:60,f:18, dish:"Soya chunk curry"} ]},
   { day:"Day 2", style:"Non-Veg", meals:[
-    {slot:"Breakfast", items:"Oats (60g dry) cooked in milk with banana + 6 almonds", cal:560,p:22,c:75,f:16},
-    {slot:"Mid-Morning", items:"Sprouts chaat (1.5 cup) with lemon", cal:260,p:14,c:38,f:4},
-    {slot:"Lunch", items:"1.5 cup rice, 200g grilled chicken breast curry, 1 cup dal, salad, 1 cup curd", cal:880,p:62,c:85,f:20},
-    {slot:"Evening", items:"1 scoop whey + 1 apple", cal:300,p:27,c:30,f:4},
-    {slot:"Dinner", items:"2 roti, 150g chicken/egg curry, mixed veg sabzi, 1 bowl curd", cal:630,p:42,c:55,f:20} ]},
+    {slot:"Breakfast", items:"Oats (60g dry) cooked in milk with banana + 6 almonds", cal:560,p:22,c:75,f:16, dish:"Oats porridge"},
+    {slot:"Mid-Morning", items:"Sprouts chaat (1.5 cup) with lemon", cal:260,p:14,c:38,f:4, dish:"Sprouts chaat"},
+    {slot:"Lunch", items:"1.5 cup rice, 200g grilled chicken breast curry, 1 cup dal, salad, 1 cup curd", cal:880,p:62,c:85,f:20, dish:"Chicken curry"},
+    {slot:"Evening", items:"1 scoop whey + 1 apple", cal:300,p:27,c:30,f:4, dish:null},
+    {slot:"Dinner", items:"2 roti, 150g chicken/egg curry, mixed veg sabzi, 1 bowl curd", cal:630,p:42,c:55,f:20, dish:"Chicken egg curry"} ]},
   { day:"Day 3", style:"Veg", meals:[
-    {slot:"Breakfast", items:"4 egg whites + 1 whole egg omelette, 2 besan chilla, 1 bowl curd", cal:600,p:40,c:40,f:26},
-    {slot:"Mid-Morning", items:"1 bowl fruit chaat (papaya, guava, orange)", cal:220,p:3,c:50,f:1},
-    {slot:"Lunch", items:"2 roti + 1 cup rice, kadhi + 150g paneer tikka, salad, buttermilk", cal:830,p:44,c:95,f:24},
-    {slot:"Evening", items:"1 scoop whey + 4 walnuts", cal:300,p:28,c:12,f:15},
-    {slot:"Dinner", items:"1.5 cup rice, 1 cup moong dal, lauki sabzi, 1 bowl curd", cal:600,p:30,c:90,f:10} ]},
+    {slot:"Breakfast", items:"4 egg whites + 1 whole egg omelette, 2 besan chilla, 1 bowl curd", cal:600,p:40,c:40,f:26, dish:"Egg white omelette"},
+    {slot:"Mid-Morning", items:"1 bowl fruit chaat (papaya, guava, orange)", cal:220,p:3,c:50,f:1, dish:null},
+    {slot:"Lunch", items:"2 roti + 1 cup rice, kadhi + 150g paneer tikka, salad, buttermilk", cal:830,p:44,c:95,f:24, dish:"Kadhi"},
+    {slot:"Evening", items:"1 scoop whey + 4 walnuts", cal:300,p:28,c:12,f:15, dish:null},
+    {slot:"Dinner", items:"1.5 cup rice, 1 cup moong dal, lauki sabzi, 1 bowl curd", cal:600,p:30,c:90,f:10, dish:"Moong dal"} ]},
   { day:"Day 4", style:"Non-Veg", meals:[
-    {slot:"Breakfast", items:"3-egg masala omelette, 2 multigrain toast, 1 glass buttermilk", cal:580,p:34,c:45,f:26},
-    {slot:"Mid-Morning", items:"1 banana + handful roasted makhana", cal:260,p:6,c:42,f:8},
-    {slot:"Lunch", items:"1.5 cup rice, 200g fish curry, 1 cup dal, salad, curd", cal:850,p:55,c:90,f:20},
-    {slot:"Evening", items:"1 scoop whey + 1 pear", cal:300,p:27,c:32,f:3},
-    {slot:"Dinner", items:"2 roti, 150g chicken keema with peas, salad, curd", cal:640,p:42,c:55,f:22} ]},
+    {slot:"Breakfast", items:"3-egg masala omelette, 2 multigrain toast, 1 glass buttermilk", cal:580,p:34,c:45,f:26, dish:"Masala omelette"},
+    {slot:"Mid-Morning", items:"1 banana + handful roasted makhana", cal:260,p:6,c:42,f:8, dish:null},
+    {slot:"Lunch", items:"1.5 cup rice, 200g fish curry, 1 cup dal, salad, curd", cal:850,p:55,c:90,f:20, dish:"Fish curry"},
+    {slot:"Evening", items:"1 scoop whey + 1 pear", cal:300,p:27,c:32,f:3, dish:null},
+    {slot:"Dinner", items:"2 roti, 150g chicken keema with peas, salad, curd", cal:640,p:42,c:55,f:22, dish:"Chicken keema"} ]},
   { day:"Day 5", style:"Veg", meals:[
-    {slot:"Breakfast", items:"Moong dal chilla (3) with paneer stuffing, 1 bowl curd", cal:590,p:36,c:50,f:22},
-    {slot:"Mid-Morning", items:"1 bowl sprouts + roasted peanuts (20g)", cal:280,p:15,c:25,f:12},
-    {slot:"Lunch", items:"1.5 cup rice, chole (1 cup), 150g paneer bhurji, salad, curd", cal:870,p:46,c:100,f:24},
-    {slot:"Evening", items:"1 scoop whey + 1 orange", cal:300,p:27,c:30,f:3},
-    {slot:"Dinner", items:"2 roti, dal makhani (light), bhindi sabzi, curd", cal:610,p:32,c:65,f:16} ]},
+    {slot:"Breakfast", items:"Moong dal chilla (3) with paneer stuffing, 1 bowl curd", cal:590,p:36,c:50,f:22, dish:"Moong dal chilla"},
+    {slot:"Mid-Morning", items:"1 bowl sprouts + roasted peanuts (20g)", cal:280,p:15,c:25,f:12, dish:"Sprouts chaat"},
+    {slot:"Lunch", items:"1.5 cup rice, chole (1 cup), 150g paneer bhurji, salad, curd", cal:870,p:46,c:100,f:24, dish:"Chole"},
+    {slot:"Evening", items:"1 scoop whey + 1 orange", cal:300,p:27,c:30,f:3, dish:null},
+    {slot:"Dinner", items:"2 roti, dal makhani (light), bhindi sabzi, curd", cal:610,p:32,c:65,f:16, dish:"Dal makhani"} ]},
   { day:"Day 6", style:"Non-Veg", meals:[
-    {slot:"Breakfast", items:"4 egg whites + 2 whole eggs bhurji, 2 roti, curd", cal:610,p:42,c:42,f:26},
-    {slot:"Mid-Morning", items:"1 banana + peanut butter (1.5 tbsp)", cal:290,p:8,c:32,f:13},
-    {slot:"Lunch", items:"1.5 cup rice, 200g grilled chicken, dal, salad, curd", cal:870,p:60,c:85,f:22},
-    {slot:"Evening", items:"1 scoop whey + roasted chana (20g)", cal:310,p:30,c:22,f:8},
-    {slot:"Dinner", items:"2 roti, egg curry (3 eggs), palak sabzi, curd", cal:640,p:38,c:55,f:24} ]},
+    {slot:"Breakfast", items:"4 egg whites + 2 whole eggs bhurji, 2 roti, curd", cal:610,p:42,c:42,f:26, dish:"Egg bhurji"},
+    {slot:"Mid-Morning", items:"1 banana + peanut butter (1.5 tbsp)", cal:290,p:8,c:32,f:13, dish:null},
+    {slot:"Lunch", items:"1.5 cup rice, 200g grilled chicken, dal, salad, curd", cal:870,p:60,c:85,f:22, dish:"Grilled chicken"},
+    {slot:"Evening", items:"1 scoop whey + roasted chana (20g)", cal:310,p:30,c:22,f:8, dish:null},
+    {slot:"Dinner", items:"2 roti, egg curry (3 eggs), palak sabzi, curd", cal:640,p:38,c:55,f:24, dish:"Egg curry"} ]},
   { day:"Day 7", style:"Veg (light/cheat-friendly)", meals:[
-    {slot:"Breakfast", items:"Vegetable daliya (broken wheat) with curd, 6 almonds", cal:560,p:20,c:80,f:14},
-    {slot:"Mid-Morning", items:"1 bowl mixed fruit", cal:200,p:2,c:46,f:1},
-    {slot:"Lunch", items:"1.5 cup rice, sambar, 150g paneer sabzi, salad, curd", cal:830,p:40,c:100,f:22},
-    {slot:"Evening", items:"1 scoop whey in milk", cal:340,p:32,c:28,f:8},
-    {slot:"Dinner", items:"Vegetable khichdi (1.5 cup) with ghee (1 tsp), curd", cal:600,p:24,c:90,f:14} ]}
+    {slot:"Breakfast", items:"Vegetable daliya (broken wheat) with curd, 6 almonds", cal:560,p:20,c:80,f:14, dish:"Vegetable daliya"},
+    {slot:"Mid-Morning", items:"1 bowl mixed fruit", cal:200,p:2,c:46,f:1, dish:null},
+    {slot:"Lunch", items:"1.5 cup rice, sambar, 150g paneer sabzi, salad, curd", cal:830,p:40,c:100,f:22, dish:"Sambar"},
+    {slot:"Evening", items:"1 scoop whey in milk", cal:340,p:32,c:28,f:8, dish:null},
+    {slot:"Dinner", items:"Vegetable khichdi (1.5 cup) with ghee (1 tsp), curd", cal:600,p:24,c:90,f:14, dish:"Vegetable khichdi"} ]}
 ];
 
 const GROCERY = [
@@ -228,15 +234,102 @@ function loadLog(){
   } catch(e){ return { meals:{}, workout:{}, week:1 }; }
 }
 function saveLog(log){ localStorage.setItem("log:"+DATE, JSON.stringify(log)); }
+function loadExLog(date){
+  try { const raw = localStorage.getItem("exlog:"+date); return raw ? JSON.parse(raw) : {}; }
+  catch(e){ return {}; }
+}
+function saveExLog(date, data){ localStorage.setItem("exlog:"+date, JSON.stringify(data)); }
+function getExerciseHistory(exerciseName){
+  const out = [];
+  for(let i=0;i<localStorage.length;i++){
+    const key = localStorage.key(i);
+    if(key && key.startsWith("exlog:")){
+      const date = key.slice(6);
+      try {
+        const data = JSON.parse(localStorage.getItem(key));
+        if(data[exerciseName] && data[exerciseName].weight){
+          out.push({ date, weight: data[exerciseName].weight, reps: data[exerciseName].reps, sets: data[exerciseName].sets });
+        }
+      } catch(e){}
+    }
+  }
+  return out.sort((a,b)=>a.date.localeCompare(b.date));
+}
+function getLatestBodyweight(){
+  if(weightHistory.length===0) return 73;
+  return [...weightHistory].sort((a,b)=>a.date.localeCompare(b.date)).slice(-1)[0].weight;
+}
+function parseSets(str){
+  const m = (str||"").match(/^(\d+)x/);
+  return m ? parseInt(m[1],10) : 3;
+}
+function sessionStats(){
+  let totalSets = 0, tonnage = 0;
+  const weekKey = "w"+log.week;
+  todaysWorkout.exercises.forEach(ex=>{
+    if(log.workout[ex.name]){
+      const sets = parseSets(ex[weekKey]);
+      totalSets += sets;
+      const detail = exLog[ex.name];
+      if(detail && detail.weight && detail.reps){
+        tonnage += detail.weight * detail.reps * sets;
+      }
+    }
+  });
+  const bw = getLatestBodyweight();
+  const minutes = totalSets * 3; // ~3 min per set incl. rest, rough estimate
+  const MET = 6.0; // vigorous resistance training
+  const calories = Math.round(MET * 3.5 * bw / 200 * minutes);
+  return { totalSets, tonnage: Math.round(tonnage), calories };
+}
+function isPR(exerciseName, weight){
+  if(!weight) return false;
+  const hist = getExerciseHistory(exerciseName).filter(h=>h.date!==DATE);
+  if(hist.length===0) return false;
+  const maxWeight = Math.max(...hist.map(h=>h.weight||0));
+  return weight > maxWeight;
+}
+function getWorkoutStreak(){
+  let streak = 0;
+  let d = new Date();
+  for(let i=0;i<90;i++){
+    const iso = d.toISOString().slice(0,10);
+    const dow = d.getDay();
+    if(dow===0){ d.setDate(d.getDate()-1); continue; } // Sunday rest day doesn't break streak
+    try {
+      const raw = localStorage.getItem("log:"+iso);
+      if(raw){
+        const data = JSON.parse(raw);
+        const hasWorkout = data.workout && Object.values(data.workout).some(v=>v);
+        if(hasWorkout){ streak++; d.setDate(d.getDate()-1); continue; }
+      }
+    } catch(e){}
+    break;
+  }
+  return streak;
+}
+function allExerciseNames(){
+  const set = new Set();
+  WORKOUT_DAYS.forEach(d=>d.exercises.forEach(ex=>set.add(ex.name)));
+  return [...set];
+}
 function loadWeightHistory(){
   try { const raw = localStorage.getItem("weight-history"); return raw ? JSON.parse(raw) : []; }
   catch(e){ return []; }
 }
 function saveWeightHistory(h){ localStorage.setItem("weight-history", JSON.stringify(h)); }
+function loadMeasureHistory(){
+  try { const raw = localStorage.getItem("measure-history"); return raw ? JSON.parse(raw) : []; }
+  catch(e){ return []; }
+}
+function saveMeasureHistory(h){ localStorage.setItem("measure-history", JSON.stringify(h)); }
 
 let log = loadLog();
+let exLog = loadExLog(DATE);
 let weightHistory = loadWeightHistory();
+let measureHistory = loadMeasureHistory();
 let currentTab = "today";
+let selectedStrengthExercise = null;
 
 // Verified real YouTube video IDs — filled in progressively.
 // If an exercise/dish isn't in here yet, we fall back to a live search link.
@@ -289,6 +382,26 @@ const RECIPE_VIDEO_IDS = {
   "Egg bhurji": "1OdPf65aPJg",
   "Besan chilla": "35xrnRaa1x4",
   "Rajma": "nnvk38T-iq8",
+  "Paneer bhurji": "XGzC7-hTkhU",
+  "Soya chunk curry": "fmD9cJ51xng",
+  "Palak sabzi": "HwGKADhUvHI",
+  "Oats porridge": "LgZeATxZPDk",
+  "Sprouts chaat": "Zt_nyVhxssk",
+  "Chicken curry": "hvRSjSPdKbA",
+  "Chicken egg curry": "hvRSjSPdKbA",
+  "Egg white omelette": "WLNJ1VHe6nU",
+  "Kadhi": "EPxfnt7jqK4",
+  "Moong dal": "K58aXvkJmYg",
+  "Masala omelette": "QAzM2CIS_5Q",
+  "Fish curry": "crkpvBKoI4Q",
+  "Chicken keema": "GB392AS09cg",
+  "Moong dal chilla": "jPgqBx3B_GI",
+  "Chole": "EL9X-P98m2Q",
+  "Dal makhani": "6HxF7N8Gbdw",
+  "Vegetable daliya": "zhsFZ2WA8ao",
+  "Sambar": "ji4bkE5qwI8",
+  "Grilled chicken": "EjjKRqQYQPw",
+  "Egg curry": "j1z9MWqmkIs",
 };
 
 function slugify(s){ return s.replace(/[^a-zA-Z0-9]/g,""); }
@@ -330,7 +443,7 @@ function consumedToday(){
 }
 
 /* ---------------- RENDER ---------------- */
-const TABS = [["today","Today"],["workout","Workout"],["meals","Meals"],["grocery","Grocery"],["supplements","Supplements"],["progress","Progress"]];
+const TABS = [["today","Today"],["workout","Workout"],["strength","Strength"],["meals","Meals"],["grocery","Grocery"],["supplements","Supplements"],["progress","Progress"]];
 
 function renderTabs(){
   const el = document.getElementById("tabs");
@@ -368,12 +481,12 @@ function renderToday(){
   todaysMeals.meals.forEach(m=>{
     const checked = !!log.meals[m.slot];
     const uid = "today-meal-"+slugify(m.slot);
-    const dish = dishName(m.items);
+    const videoLinkHtml = m.dish ? `<a class="video-link" href="javascript:void(0)" onclick="event.stopPropagation();event.preventDefault();toggleVideo('${uid}','${m.dish.replace(/'/g,"\\'")}',true)">▶ Watch recipe</a>
+        <div id="vidbox-${uid}" style="display:none"></div>` : "";
     html += `<label class="item-row ${checked?'checked-meal':''}" data-meal="${m.slot}">
       <input type="checkbox" ${checked?'checked':''} data-meal-cb="${m.slot}" />
       <div style="flex:1"><div class="item-title">${m.slot}</div><div class="item-sub">${m.items}</div>
-        <a class="video-link" href="javascript:void(0)" onclick="event.stopPropagation();event.preventDefault();toggleVideo('${uid}','${dish.replace(/'/g,"\\'")}',true)">▶ Watch recipe</a>
-        <div id="vidbox-${uid}" style="display:none"></div>
+        ${videoLinkHtml}
       </div>
       <div class="item-macro">${m.cal}kcal<br>${m.p}P</div>
     </label>`;
@@ -382,17 +495,33 @@ function renderToday(){
   if(todaysWorkout.exercises.length===0){
     html += `<div class="rest-note">Rest day. Walk, stretch, hydrate.</div>`;
   } else {
+    const stats = sessionStats();
+    const streak = getWorkoutStreak();
+    html += `<div class="session-stats">
+      <div style="text-align:center;"><div class="session-stat-val" style="color:#E8A33D;">${stats.calories}</div><div class="ring-label">Cal Burned</div></div>
+      <div style="text-align:center;"><div class="session-stat-val" style="color:#8FA876;">${stats.tonnage}kg</div><div class="ring-label">Volume</div></div>
+      <div style="text-align:center;"><div class="session-stat-val" style="color:#4A9CD8;">${streak}🔥</div><div class="ring-label">Day Streak</div></div>
+    </div>
+    <div class="small-note" style="margin-bottom:10px;">Calories are a rough estimate from your logged sets and bodyweight — not a precise measurement (no heart-rate sensor).</div>`;
     todaysWorkout.exercises.forEach(ex=>{
       const checked = !!log.workout[ex.name];
       const uid = "today-ex-"+slugify(ex.name);
-      html += `<label class="item-row ex ${checked?'checked-ex':''}">
-        <input type="checkbox" ${checked?'checked':''} data-ex-cb="${ex.name}" />
-        <div style="flex:1"><div class="item-title">${ex.name}</div>
-          <a class="video-link" href="javascript:void(0)" onclick="event.stopPropagation();event.preventDefault();toggleVideo('${uid}','${ex.name.replace(/'/g,"\\'")}',false)">▶ Watch form</a>
-          <div id="vidbox-${uid}" style="display:none"></div>
+      const detail = exLog[ex.name] || {};
+      const pr = isPR(ex.name, detail.weight);
+      html += `<div class="item-row ex ${checked?'checked-ex':''}" style="flex-direction:column;align-items:stretch;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <input type="checkbox" ${checked?'checked':''} data-ex-cb="${ex.name}" />
+          <div style="flex:1"><div class="item-title">${ex.name}${pr?' <span class="pr-badge">🏆 PR</span>':''}</div>
+            <a class="video-link" href="javascript:void(0)" onclick="event.stopPropagation();event.preventDefault();toggleVideo('${uid}','${ex.name.replace(/'/g,"\\'")}',false)">▶ Watch form</a>
+            <div id="vidbox-${uid}" style="display:none"></div>
+          </div>
+          <div class="ex-load">${ex[weekKey]}</div>
         </div>
-        <div class="ex-load">${ex[weekKey]}</div>
-      </label>`;
+        <div class="weight-log-row">
+          <input type="number" placeholder="Weight (kg)" class="mini-input" data-ex-weight="${ex.name}" value="${detail.weight||''}" />
+          <input type="number" placeholder="Reps done" class="mini-input" data-ex-reps="${ex.name}" value="${detail.reps||''}" />
+        </div>
+      </div>`;
     });
   }
   return html;
@@ -441,13 +570,13 @@ function renderMeals(){
       <div class="day-body">`;
     d.meals.forEach(m=>{
       const uid = "meal-"+slugify(d.day)+"-"+slugify(m.slot);
-      const dish = dishName(m.items);
+      const videoLinkHtml = m.dish ? `<a class="video-link" href="javascript:void(0)" onclick="toggleVideo('${uid}','${m.dish.replace(/'/g,"\\'")}',true)">▶ Watch recipe</a>
+        <div id="vidbox-${uid}" style="display:none;"></div>` : "";
       html += `<div class="meal-slot">
         <div class="meal-slot-name">${m.slot}</div>
         <div class="meal-slot-items">${m.items}</div>
         <div class="meal-slot-macro">${m.cal}kcal · P${m.p} C${m.c} F${m.f}</div>
-        <a class="video-link" href="javascript:void(0)" onclick="toggleVideo('${uid}','${dish.replace(/'/g,"\\'")}',true)">▶ Watch recipe</a>
-        <div id="vidbox-${uid}" style="display:none;"></div>
+        ${videoLinkHtml}
       </div>`;
     });
     html += `</div></div>`;
@@ -479,16 +608,57 @@ function renderSupplements(){
   </div>`;
 }
 
+function svgLineChart(points, color, unit){
+  if(points.length < 2){
+    return `<div class="small-note">Log at least 2 entries to see a trend chart.</div>`;
+  }
+  const w = 320, h = 140, pad = 28;
+  const vals = points.map(p=>p.value);
+  let min = Math.min(...vals), max = Math.max(...vals);
+  if(min===max){ min -= 1; max += 1; }
+  const xStep = (w - pad*2) / (points.length - 1);
+  const coords = points.map((p,i)=>{
+    const x = pad + i*xStep;
+    const y = h - pad - ((p.value - min)/(max-min)) * (h - pad*2);
+    return [x,y];
+  });
+  const path = coords.map((c,i)=> (i===0?"M":"L") + c[0].toFixed(1) + "," + c[1].toFixed(1)).join(" ");
+  const dots = coords.map((c,i)=>`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="3.5" fill="${color}"><title>${points[i].date}: ${points[i].value}${unit}</title></circle>`).join("");
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;display:block;">
+    <text x="${pad}" y="14" font-size="10" fill="#8A9490" font-family="JetBrains Mono, monospace">${max}${unit}</text>
+    <text x="${pad}" y="${h-pad+16}" font-size="10" fill="#8A9490" font-family="JetBrains Mono, monospace">${min}${unit}</text>
+    <path d="${path}" fill="none" stroke="${color}" stroke-width="2.5"/>
+    ${dots}
+  </svg>`;
+}
+
 function renderProgress(){
+  const sortedWeights = [...weightHistory].sort((a,b)=>a.date.localeCompare(b.date));
+  let deltaHtml = "";
+  if(sortedWeights.length >= 2){
+    const first = sortedWeights[0].weight, last = sortedWeights[sortedWeights.length-1].weight;
+    const diff = (last - first);
+    const sign = diff >= 0 ? "+" : "";
+    const color = diff >= 0 ? "#8FA876" : "#C97B63";
+    deltaHtml = `<div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:${color}; margin-top:8px;">
+      ${sign}${diff.toFixed(1)}kg since ${first!==undefined ? sortedWeights[0].date : ""} (${first}kg → ${last}kg)
+    </div>`;
+  }
+
   let html = `<div class="progress-card">
     <div class="progress-label">Log today's weight</div>
     <div class="weight-row">
       <input type="number" placeholder="73.0" id="weightInput" class="weight-input" />
       <button class="weight-save" id="weightSaveBtn">Save</button>
     </div>
+    ${deltaHtml}
   </div>
   <div class="progress-card">
-    <div class="progress-label">History</div>`;
+    <div class="progress-label">Weight trend</div>
+    ${svgLineChart(sortedWeights.map(w=>({date:w.date, value:w.weight})), "#E8A33D", "kg")}
+  </div>
+  <div class="progress-card">
+    <div class="progress-label">Weight history</div>`;
   if(weightHistory.length===0){
     html += `<div class="small-note">No entries yet — log your weight weekly (same day, same time, e.g. every Monday morning) to track real trends.</div>`;
   } else {
@@ -496,7 +666,45 @@ function renderProgress(){
       html += `<div class="hist-row"><span class="hist-date">${w.date}</span><span class="hist-val">${w.weight} kg</span></div>`;
     });
   }
+  html += `</div>
+
+  <div class="progress-card">
+    <div class="progress-label">Log body measurements (cm)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <input type="number" placeholder="Chest" id="mChest" class="weight-input" />
+      <input type="number" placeholder="Waist" id="mWaist" class="weight-input" />
+      <input type="number" placeholder="Arms" id="mArms" class="weight-input" />
+      <input type="number" placeholder="Thighs" id="mThighs" class="weight-input" />
+    </div>
+    <button class="weight-save" id="measureSaveBtn" style="width:100%;">Save Measurements</button>
+  </div>
+  <div class="progress-card">
+    <div class="progress-label">Chest trend</div>
+    ${svgLineChart([...measureHistory].sort((a,b)=>a.date.localeCompare(b.date)).filter(m=>m.chest).map(m=>({date:m.date, value:m.chest})), "#4A9CD8", "cm")}
+  </div>
+  <div class="progress-card">
+    <div class="progress-label">Measurement history</div>`;
+  if(measureHistory.length===0){
+    html += `<div class="small-note">No measurements logged yet. Chest, waist, arms, and thighs tell you more about actual muscle gain than the scale alone — measure once every 2 weeks, same time of day.</div>`;
+  } else {
+    [...measureHistory].reverse().forEach(m=>{
+      html += `<div class="hist-row"><span class="hist-date">${m.date}</span><span class="hist-val">C${m.chest||"-"} W${m.waist||"-"} A${m.arms||"-"} T${m.thighs||"-"}</span></div>`;
+    });
+  }
   html += `</div>`;
+
+  const exNames = allExerciseNames();
+  if(!selectedStrengthExercise || !exNames.includes(selectedStrengthExercise)) selectedStrengthExercise = exNames[0];
+  const exHist = getExerciseHistory(selectedStrengthExercise);
+  const best = exHist.length ? Math.max(...exHist.map(h=>h.weight||0)) : 0;
+  html += `<div class="progress-card">
+    <div class="progress-label">Strength progress</div>
+    <select id="strengthExerciseSelect" class="stat-select">
+      ${exNames.map(n=>`<option value="${n}" ${n===selectedStrengthExercise?'selected':''}>${n}</option>`).join('')}
+    </select>
+    <div style="font-family:'JetBrains Mono',monospace;color:#E8A33D;font-size:14px;margin-bottom:8px;">Best logged: ${best>0?best+'kg':'—'}</div>
+    ${svgLineChart(exHist.map(h=>({date:h.date, value:h.weight})), "#E8A33D", "kg")}
+  </div>`;
   return html;
 }
 
@@ -543,6 +751,50 @@ function render(){
       weightHistory = [...weightHistory.filter(w=>w.date!==DATE), {date:DATE, weight:val}]
         .sort((a,b)=>a.date.localeCompare(b.date));
       saveWeightHistory(weightHistory);
+      render();
+    });
+  }
+  const measureBtn = document.getElementById("measureSaveBtn");
+  if(measureBtn){
+    measureBtn.addEventListener("click", ()=>{
+      const chest = parseFloat(document.getElementById("mChest").value) || null;
+      const waist = parseFloat(document.getElementById("mWaist").value) || null;
+      const arms = parseFloat(document.getElementById("mArms").value) || null;
+      const thighs = parseFloat(document.getElementById("mThighs").value) || null;
+      if(!chest && !waist && !arms && !thighs) return;
+      measureHistory = [...measureHistory.filter(m=>m.date!==DATE), {date:DATE, chest, waist, arms, thighs}]
+        .sort((a,b)=>a.date.localeCompare(b.date));
+      saveMeasureHistory(measureHistory);
+      render();
+    });
+  }
+  content.querySelectorAll("[data-ex-weight]").forEach(inp=>{
+    inp.addEventListener("change", ()=>{
+      const name = inp.dataset.exWeight;
+      const val = parseFloat(inp.value) || null;
+      exLog[name] = exLog[name] || {};
+      exLog[name].weight = val;
+      const weekKey = "w"+log.week;
+      const exObj = todaysWorkout.exercises.find(e=>e.name===name);
+      exLog[name].sets = exObj ? parseSets(exObj[weekKey]) : null;
+      saveExLog(DATE, exLog);
+      render();
+    });
+  });
+  content.querySelectorAll("[data-ex-reps]").forEach(inp=>{
+    inp.addEventListener("change", ()=>{
+      const name = inp.dataset.exReps;
+      const val = parseInt(inp.value) || null;
+      exLog[name] = exLog[name] || {};
+      exLog[name].reps = val;
+      saveExLog(DATE, exLog);
+      render();
+    });
+  });
+  const strengthSelect = document.getElementById("strengthExerciseSelect");
+  if(strengthSelect){
+    strengthSelect.addEventListener("change", ()=>{
+      selectedStrengthExercise = strengthSelect.value;
       render();
     });
   }
