@@ -1,6 +1,6 @@
 {
-  "name": "Iron & Thali — Praveen's Build",
-  "short_name": "Iron & Thali",
+  "name": "My Health Tracker — Praveen's Build",
+  "short_name": "My Healthy Tracker",
   "description": "6-month hypertrophy workout, meal, and progress tracker",
   "start_url": "./index.html",
   "scope": "./",
