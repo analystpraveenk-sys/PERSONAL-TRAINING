@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#171D1B" />
-<title>Iron & Thali — Praveen's Build</title>
+<title>My Healthy Tracker — Praveen's Build</title>
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="icons/icon-192.png" />
 <link rel="icon" href="icons/icon-192.png" />
@@ -46,10 +46,19 @@
   .video-frame iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:0; }
   .weight-log-row { display:flex; gap:8px; margin-top:8px; padding-left:30px; }
   .mini-input { flex:1; padding:8px 10px; border-radius:6px; border:1px solid #2A322F; background:#171D1B; color:#F2EFE9; font-size:13px; font-family:'JetBrains Mono',monospace; }
+  .save-ex-btn { padding:8px 14px; border-radius:6px; border:none; background:#E8A33D; color:#171D1B; font-weight:700; font-size:12px; cursor:pointer; white-space:nowrap; }
+  .saved-tag { font-size:11px; color:#8FA876; font-weight:600; }
   .pr-badge { font-size:10px; background:#E8A33D; color:#171D1B; padding:2px 7px; border-radius:10px; margin-left:6px; font-weight:700; vertical-align:middle; }
   .session-stats { display:flex; justify-content:space-around; background:#1E2622; border-radius:16px; padding:16px 10px; margin-bottom:14px; }
   .session-stat-val { font-family:'JetBrains Mono',monospace; font-size:20px; font-weight:700; }
   .stat-select { width:100%; padding:10px 12px; border-radius:8px; border:1px solid #2A322F; background:#171D1B; color:#F2EFE9; font-size:14px; margin-bottom:10px; }
+  .water-card { background:#1E2622; border-radius:16px; padding:16px 18px; margin-bottom:18px; }
+  .water-bar-bg { width:100%; height:14px; border-radius:7px; background:#2A322F; overflow:hidden; margin:10px 0; }
+  .water-bar-fill { height:100%; background:linear-gradient(90deg, #4A9CD8, #6BC1E8); border-radius:7px; transition:width .25s; }
+  .water-btn-row { display:flex; gap:8px; margin-top:10px; }
+  .water-btn { flex:1; padding:10px 0; border-radius:8px; border:1px solid #2A322F; background:#171D1B; color:#4A9CD8; font-weight:700; font-size:13px; cursor:pointer; }
+  .water-reset { background:none; border:none; color:#8A9490; font-size:11px; text-decoration:underline; cursor:pointer; margin-top:8px; }
+  .reminder-btn { width:100%; margin-top:12px; padding:10px 0; border-radius:8px; border:1px solid #4A9CD8; background:transparent; color:#4A9CD8; font-weight:700; font-size:13px; cursor:pointer; }
   .rest-note { padding:14px; background:#1E2622; border-radius:12px; color:#8A9490; font-size:13px; }
   .week-picker { display:flex; gap:8px; margin-bottom:16px; }
   .week-btn { flex:1; padding:8px 0; border-radius:8px; border:none; cursor:pointer; background:#1E2622; color:#B7BFB9; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; }
@@ -89,7 +98,7 @@
 <body>
 
 <div class="header">
-  <div class="eyebrow">Iron & Thali — Praveen's Build</div>
+  <div class="eyebrow">My Healthy Tracker — Praveen's Build</div>
   <div class="title">6-Month Transformation</div>
   <div class="subtitle" id="headerSub">Target: Dec 25, 2026</div>
 </div>
@@ -230,8 +239,10 @@ const todaysWorkout = WORKOUT_DAYS.find(w => w.day === workoutDayNames[dayIndex]
 function loadLog(){
   try {
     const raw = localStorage.getItem("log:"+DATE);
-    return raw ? JSON.parse(raw) : { meals:{}, workout:{}, week:1 };
-  } catch(e){ return { meals:{}, workout:{}, week:1 }; }
+    const parsed = raw ? JSON.parse(raw) : { meals:{}, workout:{}, week:1 };
+    if(parsed.water === undefined) parsed.water = 0;
+    return parsed;
+  } catch(e){ return { meals:{}, workout:{}, week:1, water:0 }; }
 }
 function saveLog(log){ localStorage.setItem("log:"+DATE, JSON.stringify(log)); }
 function loadExLog(date){
@@ -313,6 +324,13 @@ function allExerciseNames(){
   WORKOUT_DAYS.forEach(d=>d.exercises.forEach(ex=>set.add(ex.name)));
   return [...set];
 }
+function waterTargetMl(){
+  // Baseline ~35ml/kg bodyweight, plus ~750ml extra on lifting days for sweat loss.
+  const bw = getLatestBodyweight();
+  const baseline = bw * 35;
+  const isTrainingDay = todaysWorkout.exercises.length > 0;
+  return Math.round((baseline + (isTrainingDay ? 750 : 0)) / 50) * 50; // round to nearest 50ml
+}
 function loadWeightHistory(){
   try { const raw = localStorage.getItem("weight-history"); return raw ? JSON.parse(raw) : []; }
   catch(e){ return []; }
@@ -330,6 +348,28 @@ let weightHistory = loadWeightHistory();
 let measureHistory = loadMeasureHistory();
 let currentTab = "today";
 let selectedStrengthExercise = null;
+let waterRemindersOn = localStorage.getItem("water-reminders-on") === "true";
+let waterReminderInterval = null;
+
+function startWaterReminders(){
+  if(waterReminderInterval) clearInterval(waterReminderInterval);
+  waterReminderInterval = setInterval(()=>{
+    const hour = new Date().getHours();
+    if(hour < 7 || hour > 22) return; // don't nag outside waking hours while app happens to be open
+    if(Notification.permission === "granted"){
+      new Notification("💧 Water check-in", {
+        body: `You're at ${(log.water/1000).toFixed(2)}L of your ${(waterTargetMl()/1000).toFixed(1)}L target today.`,
+        icon: "icons/icon-192.png"
+      });
+    }
+  }, 90*60*1000); // every 90 minutes while app stays open
+}
+function stopWaterReminders(){
+  if(waterReminderInterval){ clearInterval(waterReminderInterval); waterReminderInterval = null; }
+}
+if(waterRemindersOn && "Notification" in window && Notification.permission === "granted"){
+  startWaterReminders();
+}
 
 // Verified real YouTube video IDs — filled in progressively.
 // If an exercise/dish isn't in here yet, we fall back to a live search link.
@@ -471,11 +511,28 @@ function ring(label, value, target, color, unit){
 function renderToday(){
   const consumed = consumedToday();
   const weekKey = "w"+log.week;
+  const waterTarget = waterTargetMl();
   let html = `<div class="rings-card">
     ${ring("Cal",consumed.cal,TARGETS.calories,"#E8A33D","")}
     ${ring("Protein",consumed.p,TARGETS.protein,"#8FA876","g")}
     ${ring("Carbs",consumed.c,TARGETS.carbs,"#4A7C7C","g")}
     ${ring("Fat",consumed.f,TARGETS.fat,"#C97B63","g")}
+  </div>
+  <div class="water-card">
+    <div class="section-label" style="margin:0 0 4px;">💧 Water Intake</div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:18px;color:#4A9CD8;">${(log.water/1000).toFixed(2)}L</span>
+      <span style="font-size:12px;color:#8A9490;">of ${(waterTarget/1000).toFixed(1)}L target</span>
+    </div>
+    <div class="water-bar-bg"><div class="water-bar-fill" style="width:${Math.min(100, Math.round(log.water/waterTarget*100))}%"></div></div>
+    <div class="water-btn-row">
+      <button class="water-btn" data-water-add="250">+250ml<br><span style="font-size:10px;font-weight:400;">glass</span></button>
+      <button class="water-btn" data-water-add="500">+500ml<br><span style="font-size:10px;font-weight:400;">bottle</span></button>
+      <button class="water-btn" data-water-add="750">+750ml<br><span style="font-size:10px;font-weight:400;">big bottle</span></button>
+    </div>
+    <button class="water-reset" id="waterResetBtn">Reset today's water</button>
+    <button class="reminder-btn" id="reminderToggleBtn">${waterRemindersOn ? "🔕 Turn off water reminders" : "🔔 Turn on water reminders"}</button>
+    <div class="small-note" style="margin-top:8px;">Honest note: reminders only fire while this app is open on your screen or running in a background tab — phones don't allow a simple app like this to send notifications once it's fully closed (that needs a paid server-based push service). Treat this as a nudge while you're using your phone, and maybe set one phone alarm as backup for full-day coverage.</div>
   </div>
   <div class="section-label">Tap meals as you eat them</div>`;
   todaysMeals.meals.forEach(m=>{
@@ -506,8 +563,10 @@ function renderToday(){
     todaysWorkout.exercises.forEach(ex=>{
       const checked = !!log.workout[ex.name];
       const uid = "today-ex-"+slugify(ex.name);
+      const slug = slugify(ex.name);
       const detail = exLog[ex.name] || {};
       const pr = isPR(ex.name, detail.weight);
+      const savedTag = (detail.weight && detail.reps) ? `<span class="saved-tag">✓ saved: ${detail.weight}kg × ${detail.reps}</span>` : "";
       html += `<div class="item-row ex ${checked?'checked-ex':''}" style="flex-direction:column;align-items:stretch;">
         <div style="display:flex;align-items:center;gap:12px;">
           <input type="checkbox" ${checked?'checked':''} data-ex-cb="${ex.name}" />
@@ -518,9 +577,11 @@ function renderToday(){
           <div class="ex-load">${ex[weekKey]}</div>
         </div>
         <div class="weight-log-row">
-          <input type="number" placeholder="Weight (kg)" class="mini-input" data-ex-weight="${ex.name}" value="${detail.weight||''}" />
-          <input type="number" placeholder="Reps done" class="mini-input" data-ex-reps="${ex.name}" value="${detail.reps||''}" />
+          <input type="number" placeholder="Weight (kg)" class="mini-input" id="w-${slug}" value="${detail.weight||''}" />
+          <input type="number" placeholder="Reps done" class="mini-input" id="r-${slug}" value="${detail.reps||''}" />
+          <button class="save-ex-btn" data-ex-save="${ex.name}" data-ex-slug="${slug}">Save</button>
         </div>
+        ${savedTag ? `<div style="padding-left:30px;">${savedTag}</div>` : ""}
       </div>`;
     });
   }
@@ -768,33 +829,76 @@ function render(){
       render();
     });
   }
-  content.querySelectorAll("[data-ex-weight]").forEach(inp=>{
-    inp.addEventListener("change", ()=>{
-      const name = inp.dataset.exWeight;
-      const val = parseFloat(inp.value) || null;
+  content.querySelectorAll("[data-ex-save]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const name = btn.dataset.exSave;
+      const slug = btn.dataset.exSlug;
+      const weightVal = parseFloat(document.getElementById("w-"+slug).value) || null;
+      const repsVal = parseInt(document.getElementById("r-"+slug).value) || null;
+      if(!weightVal || !repsVal){
+        btn.textContent = "Enter both!";
+        setTimeout(()=>{ btn.textContent = "Save"; }, 1400);
+        return;
+      }
       exLog[name] = exLog[name] || {};
-      exLog[name].weight = val;
+      exLog[name].weight = weightVal;
+      exLog[name].reps = repsVal;
       const weekKey = "w"+log.week;
       const exObj = todaysWorkout.exercises.find(e=>e.name===name);
       exLog[name].sets = exObj ? parseSets(exObj[weekKey]) : null;
       saveExLog(DATE, exLog);
-      render();
-    });
-  });
-  content.querySelectorAll("[data-ex-reps]").forEach(inp=>{
-    inp.addEventListener("change", ()=>{
-      const name = inp.dataset.exReps;
-      const val = parseInt(inp.value) || null;
-      exLog[name] = exLog[name] || {};
-      exLog[name].reps = val;
-      saveExLog(DATE, exLog);
-      render();
+      log.workout[name] = true; // auto-mark done since you logged real numbers
+      saveLog(log);
+      btn.textContent = "✓ Saved";
+      setTimeout(()=>{ render(); }, 500);
     });
   });
   const strengthSelect = document.getElementById("strengthExerciseSelect");
   if(strengthSelect){
     strengthSelect.addEventListener("change", ()=>{
       selectedStrengthExercise = strengthSelect.value;
+      render();
+    });
+  }
+  content.querySelectorAll("[data-water-add]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const ml = parseInt(btn.dataset.waterAdd, 10);
+      log.water = (log.water||0) + ml;
+      saveLog(log);
+      render();
+    });
+  });
+  const waterResetBtn = document.getElementById("waterResetBtn");
+  if(waterResetBtn){
+    waterResetBtn.addEventListener("click", ()=>{
+      log.water = 0;
+      saveLog(log);
+      render();
+    });
+  }
+  const reminderBtn = document.getElementById("reminderToggleBtn");
+  if(reminderBtn){
+    reminderBtn.addEventListener("click", async ()=>{
+      if(waterRemindersOn){
+        waterRemindersOn = false;
+        localStorage.setItem("water-reminders-on", "false");
+        stopWaterReminders();
+        render();
+        return;
+      }
+      if(!("Notification" in window)){
+        alert("Your browser doesn't support notifications.");
+        return;
+      }
+      const perm = await Notification.requestPermission();
+      if(perm === "granted"){
+        waterRemindersOn = true;
+        localStorage.setItem("water-reminders-on", "true");
+        startWaterReminders();
+        new Notification("💧 Reminders on", { body: "I'll nudge you roughly every 90 minutes while the app is open.", icon: "icons/icon-192.png" });
+      } else {
+        alert("Notification permission was denied. You can still track water manually — reminders just won't pop up.");
+      }
       render();
     });
   }
