@@ -44,10 +44,27 @@
   .video-link:active { opacity:0.7; }
   .video-frame { position:relative; width:100%; padding-top:56.25%; margin-top:8px; border-radius:8px; overflow:hidden; }
   .video-frame iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:0; }
+  .video-fallback-link { display:block; margin-top:6px; font-size:11px; color:#8A9490; text-decoration:underline; }
   .weight-log-row { display:flex; gap:8px; margin-top:8px; padding-left:30px; }
   .mini-input { flex:1; padding:8px 10px; border-radius:6px; border:1px solid #2A322F; background:#171D1B; color:#F2EFE9; font-size:13px; font-family:'JetBrains Mono',monospace; }
   .save-ex-btn { padding:8px 14px; border-radius:6px; border:none; background:#E8A33D; color:#171D1B; font-weight:700; font-size:12px; cursor:pointer; white-space:nowrap; }
   .saved-tag { font-size:11px; color:#8FA876; font-weight:600; }
+  .last-time-note { font-size:11px; color:#4A9CD8; padding-left:30px; margin-top:4px; }
+  .logged-set-row { font-size:12px; color:#8FA876; padding-left:30px; margin-top:4px; display:flex; align-items:center; gap:8px; }
+  .del-set-btn { background:none; border:none; color:#C97B63; font-size:11px; cursor:pointer; padding:0 4px; }
+  .rest-timer-bar { position:fixed; bottom:0; left:0; right:0; background:#E8A33D; color:#171D1B; padding:14px 20px; display:flex; justify-content:space-between; align-items:center; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:16px; z-index:1000; box-shadow:0 -4px 12px rgba(0,0,0,0.3); }
+  .rest-timer-skip { background:#171D1B; color:#E8A33D; border:none; padding:6px 14px; border-radius:6px; font-size:12px; font-weight:700; }
+  .calendar-grid { display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; }
+  .cal-cell { aspect-ratio:1; border-radius:4px; }
+  .legend-dot { width:9px; height:9px; border-radius:2px; display:inline-block; }
+  .lift-level-card { background:#171D1B; border-radius:10px; padding:12px 14px; margin-bottom:10px; }
+  .level-badge { font-size:11px; padding:3px 10px; border-radius:10px; font-weight:700; }
+  .level-beginner { background:#6B6459; color:#F2EFE9; }
+  .level-novice { background:#4A7C7C; color:#F2EFE9; }
+  .level-intermediate { background:#4A9CD8; color:#171D1B; }
+  .level-advanced { background:#E8A33D; color:#171D1B; }
+  .level-elite { background:#C97B63; color:#171D1B; }
+  .coach-tip { background:#171D1B; border-left:3px solid #E8A33D; border-radius:6px; padding:10px 12px; margin-bottom:8px; font-size:13px; line-height:1.5; }
   .pr-badge { font-size:10px; background:#E8A33D; color:#171D1B; padding:2px 7px; border-radius:10px; margin-left:6px; font-weight:700; vertical-align:middle; }
   .session-stats { display:flex; justify-content:space-around; background:#1E2622; border-radius:16px; padding:16px 10px; margin-bottom:14px; }
   .session-stat-val { font-family:'JetBrains Mono',monospace; font-size:20px; font-weight:700; }
@@ -110,6 +127,10 @@
 
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content"></div>
+<div id="restTimerBar" class="rest-timer-bar" style="display:none;">
+  <span id="restTimerText">Rest: 90s</span>
+  <button class="rest-timer-skip" id="restTimerSkip">Skip</button>
+</div>
 
 <script>
 /* ---------------- DATA ---------------- */
@@ -250,6 +271,7 @@ function loadExLog(date){
   catch(e){ return {}; }
 }
 function saveExLog(date, data){ localStorage.setItem("exlog:"+date, JSON.stringify(data)); }
+// exLog[exerciseName] = { sets: [{weight, reps}, ...] } — one entry per logged set today
 function getExerciseHistory(exerciseName){
   const out = [];
   for(let i=0;i<localStorage.length;i++){
@@ -258,13 +280,20 @@ function getExerciseHistory(exerciseName){
       const date = key.slice(6);
       try {
         const data = JSON.parse(localStorage.getItem(key));
-        if(data[exerciseName] && data[exerciseName].weight){
-          out.push({ date, weight: data[exerciseName].weight, reps: data[exerciseName].reps, sets: data[exerciseName].sets });
+        const rec = data[exerciseName];
+        if(rec && rec.sets && rec.sets.length){
+          const bestWeight = Math.max(...rec.sets.map(s=>s.weight||0));
+          out.push({ date, weight: bestWeight, sets: rec.sets });
         }
       } catch(e){}
     }
   }
   return out.sort((a,b)=>a.date.localeCompare(b.date));
+}
+function getLastSession(exerciseName){
+  const hist = getExerciseHistory(exerciseName).filter(h=>h.date!==DATE);
+  if(hist.length===0) return null;
+  return hist[hist.length-1];
 }
 function getLatestBodyweight(){
   if(weightHistory.length===0) return 73;
@@ -279,11 +308,13 @@ function sessionStats(){
   const weekKey = "w"+log.week;
   todaysWorkout.exercises.forEach(ex=>{
     if(log.workout[ex.name]){
-      const sets = parseSets(ex[weekKey]);
-      totalSets += sets;
+      const targetSets = parseSets(ex[weekKey]);
       const detail = exLog[ex.name];
-      if(detail && detail.weight && detail.reps){
-        tonnage += detail.weight * detail.reps * sets;
+      if(detail && detail.sets && detail.sets.length){
+        totalSets += detail.sets.length;
+        detail.sets.forEach(s=>{ tonnage += (s.weight||0) * (s.reps||0); });
+      } else {
+        totalSets += targetSets; // not logged yet, estimate from planned sets
       }
     }
   });
@@ -318,6 +349,67 @@ function getWorkoutStreak(){
     break;
   }
   return streak;
+}
+// Strength standards: 1RM-to-bodyweight ratio thresholds (male), consensus of
+// ExRx / StrengthLevel / NSCA-style benchmarks. Levels: Beginner, Novice, Intermediate, Advanced, Elite.
+const LEVELS = ["Beginner","Novice","Intermediate","Advanced","Elite"];
+const LIFT_STANDARDS = {
+  "Barbell Bench Press": [0.5, 0.75, 1.0, 1.5, 2.0],
+  "Back Squat": [0.75, 1.0, 1.5, 2.0, 2.5],
+  "Deadlift": [1.0, 1.5, 2.0, 2.5, 3.0],
+};
+function estimate1RM(weight, reps){
+  return weight * (1 + reps/30); // Epley formula
+}
+function bestEstimated1RM(exerciseName){
+  const hist = getExerciseHistory(exerciseName);
+  let best = 0;
+  hist.forEach(h=>{
+    h.sets.forEach(s=>{
+      const e = estimate1RM(s.weight||0, s.reps||1);
+      if(e > best) best = e;
+    });
+  });
+  return Math.round(best);
+}
+function strengthLevelFor(ratio, thresholds){
+  let idx = -1;
+  for(let i=0;i<thresholds.length;i++){ if(ratio >= thresholds[i]) idx = i; }
+  return idx >= 0 ? LEVELS[idx] : "Untrained";
+}
+function nextThreshold(ratio, thresholds){
+  for(let i=0;i<thresholds.length;i++){ if(ratio < thresholds[i]) return {level:LEVELS[i], ratio:thresholds[i]}; }
+  return null; // already Elite
+}
+function dayHasActivity(iso){
+  let mealsDone=0, workoutDone=false;
+  try {
+    const raw = localStorage.getItem("log:"+iso);
+    if(raw){
+      const d = JSON.parse(raw);
+      mealsDone = d.meals ? Object.values(d.meals).filter(Boolean).length : 0;
+      workoutDone = d.workout ? Object.values(d.workout).some(v=>v) : false;
+    }
+  } catch(e){}
+  if(workoutDone && mealsDone>=3) return 2; // full day
+  if(workoutDone || mealsDone>=1) return 1; // partial
+  return 0; // nothing logged
+}
+const COACH_TIPS = [
+  "Progressive overload beats everything else combined — if you're not adding weight or reps over weeks, you're maintaining, not building.",
+  "Aim to hit failure (or 1-2 reps shy of it) on your last set of each exercise — that's where most of the growth signal comes from.",
+  "Protein spread across the day matters more than one big post-workout shake. 4-5 servings of 30-40g beats one 100g dump.",
+  "Sleep is the most underrated muscle-building tool you have. 7+ hours isn't optional if you want the gains to actually show up.",
+  "Deload every 6-8 weeks — one lighter week isn't losing progress, it's what lets the next block go harder.",
+  "Track your top set, not just 'did the workout' — the number going up over months is the only proof that matters.",
+  "Warm up with 2 light sets before your working weight on compound lifts. Cold heavy singles are how backs get tweaked.",
+  "Consistency beats intensity. A solid 45-minute session done 6 days a week beats an occasional 2-hour grind.",
+  "If a lift stalls for 3+ sessions in a row, it's not always more effort you need — check your sleep, food, and recovery first.",
+  "Mind-muscle connection matters on isolation work — slow the eccentric down and actually feel the target muscle working.",
+];
+function coachTipOfDay(){
+  const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(),0,0)) / 86400000);
+  return COACH_TIPS[dayOfYear % COACH_TIPS.length];
 }
 function allExerciseNames(){
   const set = new Set();
@@ -390,7 +482,7 @@ const VIDEO_IDS = {
   "Seated Cable Row": "EU7bOadUsNI",
   "Straight Arm Pulldown": "eKJUJ2eFPUY",
   "Barbell Curl": "KCH2RlxbIbo",
-  "Hammer Curl": "G7hy-AxQwcQ",
+  "Hammer Curl": "BRVDS6HVR9Q",
   "Barbell Shrugs": "KbsQ1E8Hg0o",
   "Back Squat": "8PMjqgR8Wa8",
   "Leg Press": "cDGOn-yfKJA",
@@ -456,10 +548,12 @@ function toggleVideo(uid, name, isMeal){
   }
   const map = isMeal ? RECIPE_VIDEO_IDS : VIDEO_IDS;
   const id = map[name];
+  const fallbackUrl = ytLink(name + (isMeal ? " recipe" : " proper form tutorial"));
   if(id){
-    box.innerHTML = `<div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/${id}" title="${name}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+    box.innerHTML = `<div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/${id}" title="${name}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+      <a href="${fallbackUrl}" target="_blank" rel="noopener" class="video-fallback-link">Video not loading? Search instead →</a>`;
   } else {
-    window.open(ytLink(name + (isMeal ? " recipe" : " proper form tutorial")), "_blank");
+    window.open(fallbackUrl, "_blank");
     return;
   }
   box.style.display = "block";
@@ -483,7 +577,7 @@ function consumedToday(){
 }
 
 /* ---------------- RENDER ---------------- */
-const TABS = [["today","Today"],["workout","Workout"],["strength","Strength"],["meals","Meals"],["grocery","Grocery"],["supplements","Supplements"],["progress","Progress"]];
+const TABS = [["today","Today"],["insights","Insights"],["workout","Workout"],["meals","Meals"],["grocery","Grocery"],["recovery","Recovery"],["progress","Progress"]];
 
 function renderTabs(){
   const el = document.getElementById("tabs");
@@ -564,9 +658,14 @@ function renderToday(){
       const checked = !!log.workout[ex.name];
       const uid = "today-ex-"+slugify(ex.name);
       const slug = slugify(ex.name);
-      const detail = exLog[ex.name] || {};
-      const pr = isPR(ex.name, detail.weight);
-      const savedTag = (detail.weight && detail.reps) ? `<span class="saved-tag">✓ saved: ${detail.weight}kg × ${detail.reps}</span>` : "";
+      const detail = exLog[ex.name] || { sets: [] };
+      const topWeight = detail.sets.length ? Math.max(...detail.sets.map(s=>s.weight||0)) : null;
+      const pr = isPR(ex.name, topWeight);
+      const last = getLastSession(ex.name);
+      const lastText = last ? `Last time (${last.date}): ` + last.sets.map(s=>`${s.weight}kg×${s.reps}`).join(", ") : "No previous data yet — this'll be your baseline.";
+      const loggedSetsHtml = detail.sets.map((s,i)=>
+        `<div class="logged-set-row">Set ${i+1}: <b>${s.weight}kg × ${s.reps}</b> <button class="del-set-btn" data-del-set="${ex.name}" data-del-idx="${i}">✕</button></div>`
+      ).join("");
       html += `<div class="item-row ex ${checked?'checked-ex':''}" style="flex-direction:column;align-items:stretch;">
         <div style="display:flex;align-items:center;gap:12px;">
           <input type="checkbox" ${checked?'checked':''} data-ex-cb="${ex.name}" />
@@ -576,12 +675,13 @@ function renderToday(){
           </div>
           <div class="ex-load">${ex[weekKey]}</div>
         </div>
+        <div class="last-time-note">📋 ${lastText}</div>
+        ${loggedSetsHtml}
         <div class="weight-log-row">
-          <input type="number" placeholder="Weight (kg)" class="mini-input" id="w-${slug}" value="${detail.weight||''}" />
-          <input type="number" placeholder="Reps done" class="mini-input" id="r-${slug}" value="${detail.reps||''}" />
-          <button class="save-ex-btn" data-ex-save="${ex.name}" data-ex-slug="${slug}">Save</button>
+          <input type="number" placeholder="Weight (kg)" class="mini-input" id="w-${slug}" />
+          <input type="number" placeholder="Reps" class="mini-input" id="r-${slug}" />
+          <button class="save-ex-btn" data-ex-save="${ex.name}" data-ex-slug="${slug}">+ Log Set</button>
         </div>
-        ${savedTag ? `<div style="padding-left:30px;">${savedTag}</div>` : ""}
       </div>`;
     });
   }
@@ -656,17 +756,50 @@ function renderGrocery(){
   return html;
 }
 
-function renderSupplements(){
-  return `<div class="supp-card">
-    <div class="supp-h">Creatine</div>
-    <p>Yes — creatine monohydrate is safe, cheap, and well-proven for muscle building. Take <b>5g/day, every day</b> (including rest days), any time — no loading phase needed. Mix in water, milk, or your shake.</p>
-    <p>Look for plain creatine monohydrate, ideally <b>Creapure-certified</b> for purity — MuscleBlaze, Avvatar, and ON's micronized creatine are all widely available in India at this standard. Avoid flavored "creatine blends" with extra fillers.</p>
-    <div class="supp-h mt">Whey Protein</div>
-    <p>Use it to close the gap when food alone can't hit 160g protein — <b>1–2 scoops (25–50g)</b> a day, e.g. one scoop mid-morning or post-workout. Brands like ON Gold Standard Whey, MuscleBlaze Biozyme, and Avvatar Whey are reliable in India — check the label for an FSSAI mark and, where possible, a third-party tested batch.</p>
-    <p class="small-note">Note: brand availability and formulations change often — before buying, do a quick check on current pricing/reviews since this list may not reflect the newest options.</p>
-    <div class="supp-h mt">Since you quit smoking</div>
-    <p>Nicely done staying off it for 6 months — that alone meaningfully improves recovery and muscle oxygenation. Keep beer/wine occasional (1–2 drinks, once a week max) since alcohol blunts protein synthesis and adds empty calories that work against your surplus.</p>
+const STRETCH_MAP = {
+  "Push A": [{name:"Doorway chest stretch", hold:"30s each side"}, {name:"Overhead triceps stretch", hold:"30s each arm"}, {name:"Cross-body shoulder stretch", hold:"30s each arm"}],
+  "Pull A": [{name:"Child's pose lat stretch", hold:"45s"}, {name:"Cat-cow flow", hold:"8-10 reps"}, {name:"Bicep wall stretch", hold:"30s each arm"}],
+  "Legs A": [{name:"Standing quad stretch", hold:"30s each leg"}, {name:"Seated hamstring stretch", hold:"30s each leg"}, {name:"Calf wall stretch", hold:"30s each leg"}, {name:"Hip flexor lunge stretch", hold:"30s each side"}],
+  "Upper": [{name:"Doorway chest stretch", hold:"30s each side"}, {name:"Child's pose lat stretch", hold:"45s"}, {name:"Cross-body shoulder stretch", hold:"30s each arm"}],
+  "Lower": [{name:"Standing quad stretch", hold:"30s each leg"}, {name:"Seated hamstring stretch", hold:"30s each leg"}, {name:"Glute figure-4 stretch", hold:"30s each leg"}, {name:"Calf wall stretch", hold:"30s each leg"}],
+  "Arms + Weak Point": [{name:"Overhead triceps stretch", hold:"30s each arm"}, {name:"Bicep wall stretch", hold:"30s each arm"}, {name:"Cross-body shoulder stretch", hold:"30s each arm"}],
+  "Rest": [{name:"Full-body foam rolling", hold:"5-10 min"}, {name:"Light 20-30 min walk", hold:""}, {name:"Gentle full-body stretch flow", hold:"10 min"}],
+};
+function renderRecovery(){
+  const tag = todaysWorkout.tag;
+  const stretches = STRETCH_MAP[tag] || STRETCH_MAP["Rest"];
+  let html = `<div class="supp-card">
+    <div class="supp-h">🧘 Today's Post-Workout Stretches — ${tag}</div>
+    <p class="small-note" style="margin-top:-4px;margin-bottom:10px;">Do these after training while muscles are warm, not before — static stretching cold can reduce power on your working sets.</p>`;
+  stretches.forEach(s=>{
+    html += `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #262E2B;font-size:13px;">
+      <span>${s.name}</span><span style="color:#8A9490;font-family:'JetBrains Mono',monospace;">${s.hold}</span>
+    </div>`;
+  });
+  html += `</div>
+
+  <div class="supp-card">
+    <div class="supp-h">🔥 Warm-Up Protocol</div>
+    <p>5 minutes of light cardio (treadmill walk or bike) to raise core temperature, then 2 progressively heavier warm-up sets before your first working set on any compound lift — e.g. bar only, then 50%, then 75%, then your working weight. Cold heavy singles are one of the most common ways lifters strain a lower back or shoulder.</p>
+  </div>
+
+  <div class="supp-card">
+    <div class="supp-h">😴 Sleep for Recovery</div>
+    <p>Muscle repair and most of your growth hormone release happen during deep sleep — not in the gym. Aim for <b>7-8 hours</b>, consistent bed/wake times even on weekends, and a cool, dark room. If you're training 6 days a week, sleep debt is the fastest way to stall progress despite doing everything else right.</p>
+  </div>
+
+  <div class="supp-card">
+    <div class="supp-h">⚠️ Injury Prevention — Know the Difference</div>
+    <p><b>Normal:</b> Dull, general muscle soreness (DOMS) that peaks 24-48h after training and fades with movement.</p>
+    <p><b>Stop immediately:</b> Sharp, sudden, localized pain during a lift, joint pain that doesn't match muscle fatigue, or any pain that gets worse as you keep training through it. Racking the bar and walking away is always the right call over pushing through real pain.</p>
+    <p>Most gym injuries come from three things: skipping the warm-up, ego-lifting beyond your controlled range of motion, and ignoring early joint niggles until they become real injuries. If something feels consistently "off" in a joint for more than a week, it's worth getting checked rather than working around it.</p>
+  </div>
+
+  <div class="supp-card">
+    <div class="supp-h">🚶 Sunday — Active Recovery</div>
+    <p>Rest day doesn't mean total stillness. A 20-30 minute walk, light stretching, or foam rolling actually speeds up recovery by moving blood through sore muscles, without adding training stress. Keep it easy — this isn't a workout, it's active rest.</p>
   </div>`;
+  return html;
 }
 
 function svgLineChart(points, color, unit){
@@ -691,6 +824,89 @@ function svgLineChart(points, color, unit){
     <path d="${path}" fill="none" stroke="${color}" stroke-width="2.5"/>
     ${dots}
   </svg>`;
+}
+
+function renderInsights(){
+  const streak = getWorkoutStreak();
+  const stats = sessionStats();
+  let html = `<div class="progress-card">
+    <div class="progress-label">🔥 Consistency</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:28px;color:#E8A33D;">${streak} <span style="font-size:14px;color:#8A9490;">day streak</span></div>
+  </div>`;
+
+  // Consistency calendar: last 28 days, 7 per row
+  html += `<div class="progress-card">
+    <div class="progress-label">Last 28 Days</div>
+    <div class="calendar-grid">`;
+  const days = [];
+  for(let i=27;i>=0;i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    const iso = d.toISOString().slice(0,10);
+    days.push({iso, level: dayHasActivity(iso), dow: d.getDay()});
+  }
+  days.forEach(d=>{
+    const colors = ["#2A322F", "#5A6B4F", "#8FA876"];
+    html += `<div class="cal-cell" style="background:${colors[d.level]}" title="${d.iso}"></div>`;
+  });
+  html += `</div>
+    <div style="display:flex;gap:12px;margin-top:10px;font-size:11px;color:#8A9490;align-items:center;">
+      <span style="display:flex;align-items:center;gap:4px;"><span class="legend-dot" style="background:#2A322F;"></span>Nothing logged</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span class="legend-dot" style="background:#5A6B4F;"></span>Partial</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span class="legend-dot" style="background:#8FA876;"></span>Full day</span>
+    </div>
+  </div>`;
+
+  // Strength levels
+  html += `<div class="progress-card">
+    <div class="progress-label">💪 Strength Levels</div>
+    <div class="small-note" style="margin-bottom:12px;">Based on your best logged set (estimated 1RM) vs. your bodyweight, benchmarked against standard strength norms for men.</div>`;
+  const bw = getLatestBodyweight();
+  Object.keys(LIFT_STANDARDS).forEach(liftName=>{
+    const best1RM = bestEstimated1RM(liftName);
+    const thresholds = LIFT_STANDARDS[liftName];
+    if(best1RM === 0){
+      html += `<div class="lift-level-card">
+        <div class="lift-level-name">${liftName}</div>
+        <div class="small-note">No sets logged yet — log a set to see your level.</div>
+      </div>`;
+      return;
+    }
+    const ratio = best1RM / bw;
+    const level = strengthLevelFor(ratio, thresholds);
+    const next = nextThreshold(ratio, thresholds);
+    const nextText = next ? `${Math.round(next.ratio*bw - best1RM)}kg more (est. 1RM) to reach ${next.level}` : "You're at Elite — top-tier relative strength.";
+    html += `<div class="lift-level-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="lift-level-name">${liftName}</div>
+        <span class="level-badge level-${level.toLowerCase()}">${level}</span>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#8A9490;margin-top:4px;">Est. 1RM: ${best1RM}kg (${ratio.toFixed(2)}× bodyweight)</div>
+      <div class="small-note" style="margin-top:4px;">${nextText}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Coach's Corner
+  html += `<div class="progress-card">
+    <div class="progress-label">🎯 Coach's Corner</div>`;
+  const insights = [];
+  if(streak >= 3) insights.push(`🔥 ${streak}-day streak — this is exactly when strength adaptation compounds. Don't break it for anything less than real recovery need.`);
+  if(streak === 0) insights.push("No active streak right now. One logged session today restarts it — momentum matters more than any single workout.");
+  allExerciseNames().slice(0,0); // no-op, keep list logic simple
+  ["Back Squat","Deadlift","Barbell Bench Press"].forEach(name=>{
+    const hist = getExerciseHistory(name);
+    if(hist.length>0){
+      const lastDate = hist[hist.length-1].date;
+      const daysSince = Math.round((new Date(DATE) - new Date(lastDate)) / 86400000);
+      if(daysSince >= 10) insights.push(`⚠️ ${name} hasn't been logged in ${daysSince} days — don't let a key lift quietly disappear from your training.`);
+    }
+  });
+  insights.push("💬 " + coachTipOfDay());
+  insights.forEach(t=>{ html += `<div class="coach-tip">${t}</div>`; });
+  html += `</div>`;
+
+  return html;
 }
 
 function renderProgress(){
@@ -769,16 +985,50 @@ function renderProgress(){
   return html;
 }
 
+let restTimerInterval = null;
+function startRestTimer(seconds){
+  const bar = document.getElementById("restTimerBar");
+  const text = document.getElementById("restTimerText");
+  if(restTimerInterval) clearInterval(restTimerInterval);
+  let remaining = seconds;
+  bar.style.display = "flex";
+  text.textContent = "Rest: " + remaining + "s";
+  restTimerInterval = setInterval(()=>{
+    remaining--;
+    if(remaining <= 0){
+      clearInterval(restTimerInterval);
+      restTimerInterval = null;
+      bar.style.display = "none";
+      if(navigator.vibrate) navigator.vibrate([200,100,200]);
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        osc.frequency.value = 880;
+        osc.connect(ctx.destination);
+        osc.start();
+        setTimeout(()=>osc.stop(), 300);
+      } catch(e){}
+      return;
+    }
+    text.textContent = "Rest: " + remaining + "s";
+  }, 1000);
+}
+document.getElementById("restTimerSkip").addEventListener("click", ()=>{
+  if(restTimerInterval){ clearInterval(restTimerInterval); restTimerInterval = null; }
+  document.getElementById("restTimerBar").style.display = "none";
+});
+
 function render(){
   renderTabs();
   document.getElementById("headerSub").textContent =
     `Target: Dec 25, 2026 · ${todaysWorkout.tag} day · ${todaysMeals.style} menu`;
   const content = document.getElementById("content");
   if(currentTab==="today") content.innerHTML = renderToday();
+  else if(currentTab==="insights") content.innerHTML = renderInsights();
   else if(currentTab==="workout") content.innerHTML = renderWorkout();
   else if(currentTab==="meals") content.innerHTML = renderMeals();
   else if(currentTab==="grocery") content.innerHTML = renderGrocery();
-  else if(currentTab==="supplements") content.innerHTML = renderSupplements();
+  else if(currentTab==="recovery") content.innerHTML = renderRecovery();
   else if(currentTab==="progress") content.innerHTML = renderProgress();
 
   content.querySelectorAll("[data-meal-cb]").forEach(cb=>{
@@ -837,20 +1087,28 @@ function render(){
       const repsVal = parseInt(document.getElementById("r-"+slug).value) || null;
       if(!weightVal || !repsVal){
         btn.textContent = "Enter both!";
-        setTimeout(()=>{ btn.textContent = "Save"; }, 1400);
+        setTimeout(()=>{ btn.textContent = "+ Log Set"; }, 1400);
         return;
       }
-      exLog[name] = exLog[name] || {};
-      exLog[name].weight = weightVal;
-      exLog[name].reps = repsVal;
-      const weekKey = "w"+log.week;
-      const exObj = todaysWorkout.exercises.find(e=>e.name===name);
-      exLog[name].sets = exObj ? parseSets(exObj[weekKey]) : null;
+      exLog[name] = exLog[name] || { sets: [] };
+      if(!exLog[name].sets) exLog[name].sets = [];
+      exLog[name].sets.push({ weight: weightVal, reps: repsVal });
       saveExLog(DATE, exLog);
-      log.workout[name] = true; // auto-mark done since you logged real numbers
+      log.workout[name] = true; // auto-mark done once at least one real set is logged
       saveLog(log);
-      btn.textContent = "✓ Saved";
-      setTimeout(()=>{ render(); }, 500);
+      startRestTimer(90);
+      render();
+    });
+  });
+  content.querySelectorAll("[data-del-set]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const name = btn.dataset.delSet;
+      const idx = parseInt(btn.dataset.delIdx, 10);
+      if(exLog[name] && exLog[name].sets){
+        exLog[name].sets.splice(idx, 1);
+        saveExLog(DATE, exLog);
+        render();
+      }
     });
   });
   const strengthSelect = document.getElementById("strengthExerciseSelect");
