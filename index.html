@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#171D1B" />
-<title>My Healthy Tracker — Praveen's Build</title>
+<title>Chayil — Praveen's Build</title>
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="icons/icon-192.png" />
 <link rel="icon" href="icons/icon-192.png" />
@@ -65,6 +65,7 @@
   .level-advanced { background:#E8A33D; color:#171D1B; }
   .level-elite { background:#C97B63; color:#171D1B; }
   .coach-tip { background:#171D1B; border-left:3px solid #E8A33D; border-radius:6px; padding:10px 12px; margin-bottom:8px; font-size:13px; line-height:1.5; }
+  .voice-toggle-btn { background:#1E2622; border:1px solid #2A322F; border-radius:20px; padding:8px 12px; font-size:16px; cursor:pointer; flex-shrink:0; }
   .pr-badge { font-size:10px; background:#E8A33D; color:#171D1B; padding:2px 7px; border-radius:10px; margin-left:6px; font-weight:700; vertical-align:middle; }
   .session-stats { display:flex; justify-content:space-around; background:#1E2622; border-radius:16px; padding:16px 10px; margin-bottom:14px; }
   .session-stat-val { font-family:'JetBrains Mono',monospace; font-size:20px; font-weight:700; }
@@ -115,9 +116,14 @@
 <body>
 
 <div class="header">
-  <div class="eyebrow">My Healthy Tracker — Praveen's Build</div>
-  <div class="title">6-Month Transformation</div>
-  <div class="subtitle" id="headerSub">Target: Dec 25, 2026</div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div>
+      <div class="eyebrow">Chayil — Praveen's Build</div>
+      <div class="title">Strength & Discipline</div>
+    </div>
+    <button id="voiceToggleBtn" class="voice-toggle-btn"></button>
+  </div>
+  <div class="subtitle" id="headerSub"></div>
 </div>
 
 <div id="installBanner" class="install-banner">
@@ -448,12 +454,15 @@ function startWaterReminders(){
   waterReminderInterval = setInterval(()=>{
     const hour = new Date().getHours();
     if(hour < 7 || hour > 22) return; // don't nag outside waking hours while app happens to be open
+    const litersSoFar = (log.water/1000).toFixed(2);
+    const targetL = (waterTargetMl()/1000).toFixed(1);
     if(Notification.permission === "granted"){
       new Notification("💧 Water check-in", {
-        body: `You're at ${(log.water/1000).toFixed(2)}L of your ${(waterTargetMl()/1000).toFixed(1)}L target today.`,
+        body: `You're at ${litersSoFar}L of your ${targetL}L target today.`,
         icon: "icons/icon-192.png"
       });
     }
+    speak(`Water check-in. You've had ${litersSoFar} liters so far, out of your ${targetL} liter target.`);
   }, 90*60*1000); // every 90 minutes while app stays open
 }
 function stopWaterReminders(){
@@ -550,7 +559,7 @@ function toggleVideo(uid, name, isMeal){
   const id = map[name];
   const fallbackUrl = ytLink(name + (isMeal ? " recipe" : " proper form tutorial"));
   if(id){
-    box.innerHTML = `<div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/${id}" title="${name}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+    box.innerHTML = `<div class="video-frame"><iframe src="https://www.youtube.com/embed/${id}" title="${name}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
       <a href="${fallbackUrl}" target="_blank" rel="noopener" class="video-fallback-link">Video not loading? Search instead →</a>`;
   } else {
     window.open(fallbackUrl, "_blank");
@@ -986,6 +995,19 @@ function renderProgress(){
 }
 
 let restTimerInterval = null;
+let voiceEnabled = localStorage.getItem("voice-enabled") !== "false";
+function speak(text){
+  if(!voiceEnabled) return;
+  if(!("speechSynthesis" in window)) return;
+  try {
+    window.speechSynthesis.cancel(); // don't stack overlapping speech
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 1.0;
+    u.pitch = 1.0;
+    u.volume = 1.0;
+    window.speechSynthesis.speak(u);
+  } catch(e){}
+}
 function startRestTimer(seconds){
   const bar = document.getElementById("restTimerBar");
   const text = document.getElementById("restTimerText");
@@ -1000,6 +1022,7 @@ function startRestTimer(seconds){
       restTimerInterval = null;
       bar.style.display = "none";
       if(navigator.vibrate) navigator.vibrate([200,100,200]);
+      speak("Rest complete. Time for your next set.");
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = ctx.createOscillator();
@@ -1018,10 +1041,23 @@ document.getElementById("restTimerSkip").addEventListener("click", ()=>{
   document.getElementById("restTimerBar").style.display = "none";
 });
 
+function updateVoiceBtn(){
+  const btn = document.getElementById("voiceToggleBtn");
+  btn.textContent = voiceEnabled ? "🔊 Voice on" : "🔇 Voice off";
+}
+updateVoiceBtn();
+document.getElementById("voiceToggleBtn").addEventListener("click", ()=>{
+  voiceEnabled = !voiceEnabled;
+  localStorage.setItem("voice-enabled", voiceEnabled ? "true" : "false");
+  if(!voiceEnabled && "speechSynthesis" in window) window.speechSynthesis.cancel();
+  updateVoiceBtn();
+  if(voiceEnabled) speak("Voice is on. I'll talk you through sets, rest, and water check-ins.");
+});
+
 function render(){
   renderTabs();
   document.getElementById("headerSub").textContent =
-    `Target: Dec 25, 2026 · ${todaysWorkout.tag} day · ${todaysMeals.style} menu`;
+    `${todaysWorkout.tag} day · ${todaysMeals.style} menu`;
   const content = document.getElementById("content");
   if(currentTab==="today") content.innerHTML = renderToday();
   else if(currentTab==="insights") content.innerHTML = renderInsights();
@@ -1090,12 +1126,18 @@ function render(){
         setTimeout(()=>{ btn.textContent = "+ Log Set"; }, 1400);
         return;
       }
+      const wasPR = isPR(name, weightVal);
       exLog[name] = exLog[name] || { sets: [] };
       if(!exLog[name].sets) exLog[name].sets = [];
       exLog[name].sets.push({ weight: weightVal, reps: repsVal });
       saveExLog(DATE, exLog);
       log.workout[name] = true; // auto-mark done once at least one real set is logged
       saveLog(log);
+      if(wasPR){
+        speak("New personal record! " + weightVal + " kilograms on " + name + ". Great work.");
+      } else {
+        speak("Set logged. " + weightVal + " kilos for " + repsVal + " reps. Rest ninety seconds.");
+      }
       startRestTimer(90);
       render();
     });
