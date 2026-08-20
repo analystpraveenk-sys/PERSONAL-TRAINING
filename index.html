@@ -559,8 +559,25 @@ function toggleVideo(uid, name, isMeal){
   const id = map[name];
   const fallbackUrl = ytLink(name + (isMeal ? " recipe" : " proper form tutorial"));
   if(id){
-    box.innerHTML = `<div class="video-frame"><iframe src="https://www.youtube.com/embed/${id}" title="${name}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
-      <a href="${fallbackUrl}" target="_blank" rel="noopener" class="video-fallback-link">Video not loading? Search instead →</a>`;
+    box.innerHTML = ""; // clear first
+    const frame = document.createElement("div");
+    frame.className = "video-frame";
+    const iframe = document.createElement("iframe");
+    iframe.src = "https://www.youtube.com/embed/" + id;
+    iframe.title = name;
+    iframe.setAttribute("frameborder", "0");
+    iframe.setAttribute("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture");
+    iframe.allowFullscreen = true;
+    iframe.loading = "eager";
+    frame.appendChild(iframe);
+    box.appendChild(frame);
+    const link = document.createElement("a");
+    link.href = fallbackUrl;
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.className = "video-fallback-link";
+    link.textContent = "Video not loading? Search instead →";
+    box.appendChild(link);
   } else {
     window.open(fallbackUrl, "_blank");
     return;
