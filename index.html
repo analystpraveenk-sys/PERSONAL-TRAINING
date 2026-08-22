@@ -20,6 +20,7 @@
   .eyebrow { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#E8A33D; font-family:'Oswald',sans-serif; }
   .title { font-size:24px; font-weight:700; font-family:'Oswald',sans-serif; margin-top:4px; }
   .subtitle { font-size:12px; color:#8A9490; margin-top:2px; }
+  .verse-line { font-size:11px; color:#E8A33D; margin-top:6px; font-style:italic; opacity:0.85; }
   .tabs { display:flex; gap:6px; padding:14px 16px; overflow-x:auto; }
   .tab-btn { padding:9px 14px; border-radius:8px; border:none; cursor:pointer; font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:0.5px; text-transform:uppercase; background:transparent; color:#B7BFB9; font-weight:600; white-space:nowrap; }
   .tab-btn.active { background:#E8A33D; color:#171D1B; }
@@ -66,6 +67,24 @@
   .level-elite { background:#C97B63; color:#171D1B; }
   .coach-tip { background:#171D1B; border-left:3px solid #E8A33D; border-radius:6px; padding:10px 12px; margin-bottom:8px; font-size:13px; line-height:1.5; }
   .voice-toggle-btn { background:#1E2622; border:1px solid #2A322F; border-radius:20px; padding:8px 12px; font-size:16px; cursor:pointer; flex-shrink:0; }
+  .habit-add-row { display:flex; gap:8px; margin-top:10px; }
+  .achievement-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #262E2B; opacity:0.55; }
+  .achievement-row.unlocked { opacity:1; }
+  .achievement-icon { font-size:24px; width:32px; text-align:center; }
+  .deload-banner { background:#2A2118; border:1px solid #E8A33D; border-radius:12px; padding:12px 14px; margin-bottom:14px; font-size:13px; color:#F2EFE9; line-height:1.5; }
+  .week-summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .week-summary-item { background:#171D1B; border-radius:10px; padding:12px; text-align:center; }
+  .week-summary-val { font-family:'JetBrains Mono',monospace; font-size:18px; color:#E8A33D; font-weight:700; }
+  .week-summary-label { font-size:10px; color:#8A9490; text-transform:uppercase; margin-top:2px; }
+  .pr-row { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid #262E2B; font-size:13px; }
+  .photo-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
+  .photo-thumb { width:100%; border-radius:10px; display:block; }
+  .photo-thumb-wrap { position:relative; }
+  .photo-date-tag { position:absolute; bottom:6px; left:6px; background:rgba(0,0,0,0.6); color:#F2EFE9; font-size:10px; padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; }
+  .photo-del-btn { position:absolute; top:6px; right:6px; background:rgba(0,0,0,0.6); color:#C97B63; border:none; border-radius:4px; padding:2px 6px; font-size:11px; }
+  .photo-upload-btn { width:100%; padding:14px; border-radius:10px; border:2px dashed #2A322F; background:#171D1B; color:#8A9490; text-align:center; font-size:13px; cursor:pointer; }
+  .injury-textarea { width:100%; padding:10px 12px; border-radius:8px; border:1px solid #2A322F; background:#171D1B; color:#F2EFE9; font-size:13px; margin-bottom:10px; font-family:'Inter',sans-serif; min-height:60px; resize:vertical; }
+  .injury-row { background:#171D1B; border-radius:10px; padding:12px; margin-bottom:8px; }
   .pr-badge { font-size:10px; background:#E8A33D; color:#171D1B; padding:2px 7px; border-radius:10px; margin-left:6px; font-weight:700; vertical-align:middle; }
   .session-stats { display:flex; justify-content:space-around; background:#1E2622; border-radius:16px; padding:16px 10px; margin-bottom:14px; }
   .session-stat-val { font-family:'JetBrains Mono',monospace; font-size:20px; font-weight:700; }
@@ -124,6 +143,7 @@
     <button id="voiceToggleBtn" class="voice-toggle-btn"></button>
   </div>
   <div class="subtitle" id="headerSub"></div>
+  <div class="verse-line" id="verseLine"></div>
 </div>
 
 <div id="installBanner" class="install-banner">
@@ -268,10 +288,37 @@ function loadLog(){
     const raw = localStorage.getItem("log:"+DATE);
     const parsed = raw ? JSON.parse(raw) : { meals:{}, workout:{}, week:1 };
     if(parsed.water === undefined) parsed.water = 0;
+    if(parsed.habits === undefined) parsed.habits = {};
     return parsed;
-  } catch(e){ return { meals:{}, workout:{}, week:1, water:0 }; }
+  } catch(e){ return { meals:{}, workout:{}, week:1, water:0, habits:{} }; }
 }
 function saveLog(log){ localStorage.setItem("log:"+DATE, JSON.stringify(log)); }
+function loadHabitList(){
+  try {
+    const raw = localStorage.getItem("habit-list");
+    return raw ? JSON.parse(raw) : ["7+ hours sleep", "No smoking", "No alcohol", "Hit water goal", "10 min prayer/reflection", "Post-workout stretch done"];
+  } catch(e){ return ["7+ hours sleep", "No smoking", "No alcohol", "Hit water goal", "10 min prayer/reflection", "Post-workout stretch done"]; }
+}
+function saveHabitList(list){ localStorage.setItem("habit-list", JSON.stringify(list)); }
+function getHabitStreak(){
+  let streak = 0;
+  let d = new Date();
+  const list = loadHabitList();
+  if(list.length === 0) return 0;
+  for(let i=0;i<90;i++){
+    const iso = d.toISOString().slice(0,10);
+    try {
+      const raw = localStorage.getItem("log:"+iso);
+      if(raw){
+        const data = JSON.parse(raw);
+        const habitsDone = data.habits ? Object.values(data.habits).filter(Boolean).length : 0;
+        if(habitsDone >= Math.ceil(list.length*0.7)){ streak++; d.setDate(d.getDate()-1); continue; }
+      }
+    } catch(e){}
+    break;
+  }
+  return streak;
+}
 function loadExLog(date){
   try { const raw = localStorage.getItem("exlog:"+date); return raw ? JSON.parse(raw) : {}; }
   catch(e){ return {}; }
@@ -417,6 +464,175 @@ function coachTipOfDay(){
   const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(),0,0)) / 86400000);
   return COACH_TIPS[dayOfYear % COACH_TIPS.length];
 }
+
+const CHAYIL_VERSES = [
+  "\"Strength and honor are her clothing.\" — Proverbs 31:25",
+  "\"Be strong and courageous... for the Lord your God is with you wherever you go.\" — Joshua 1:9",
+  "\"I can do all things through Christ who strengthens me.\" — Philippians 4:13",
+  "\"They that wait upon the Lord shall renew their strength; they shall mount up with wings as eagles.\" — Isaiah 40:31",
+  "\"The Lord is my strength and my shield.\" — Psalm 28:7",
+  "\"He gives strength to the weary and increases the power of the weak.\" — Isaiah 40:29",
+  "\"It is God who arms me with strength.\" — Psalm 18:32",
+];
+function verseOfDay(){
+  const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(),0,0)) / 86400000);
+  return CHAYIL_VERSES[dayOfYear % CHAYIL_VERSES.length];
+}
+
+function countLoggedWorkoutDays(){
+  let count = 0;
+  for(let i=0;i<localStorage.length;i++){
+    const key = localStorage.key(i);
+    if(key && key.startsWith("log:")){
+      try {
+        const d = JSON.parse(localStorage.getItem(key));
+        if(d.workout && Object.values(d.workout).some(v=>v)) count++;
+      } catch(e){}
+    }
+  }
+  return count;
+}
+function countTotalSetsLogged(){
+  let count = 0;
+  for(let i=0;i<localStorage.length;i++){
+    const key = localStorage.key(i);
+    if(key && key.startsWith("exlog:")){
+      try {
+        const d = JSON.parse(localStorage.getItem(key));
+        Object.values(d).forEach(rec=>{ if(rec.sets) count += rec.sets.length; });
+      } catch(e){}
+    }
+  }
+  return count;
+}
+function anyPREverHit(){
+  return allExerciseNames().some(name => getExerciseHistory(name).length >= 2);
+}
+function weeklySummary(){
+  let totalVolume=0, waterDaysHit=0, sleepSum=0, sleepDays=0, habitsSum=0, habitsDaysCounted=0, daysActive=0;
+  const habitList = loadHabitList();
+  for(let i=0;i<7;i++){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const iso = d.toISOString().slice(0,10);
+    const dow = d.getDay();
+    try {
+      const raw = localStorage.getItem("log:"+iso);
+      if(raw){
+        const data = JSON.parse(raw);
+        if(data.workout && Object.values(data.workout).some(v=>v)) daysActive++;
+        const dayWorkout = WORKOUT_DAYS.find(w=>w.day===["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][dow]);
+        const bw = getLatestBodyweight();
+        const target = Math.round((bw*35 + (dayWorkout && dayWorkout.exercises.length>0 ? 750:0))/50)*50;
+        if((data.water||0) >= target) waterDaysHit++;
+        if(data.habits && habitList.length>0){
+          habitsSum += Object.values(data.habits).filter(Boolean).length / habitList.length;
+          habitsDaysCounted++;
+        }
+      }
+      const exraw = localStorage.getItem("exlog:"+iso);
+      if(exraw){
+        const exd = JSON.parse(exraw);
+        Object.values(exd).forEach(rec=>{ if(rec.sets) rec.sets.forEach(s=>{ totalVolume += (s.weight||0)*(s.reps||0); }); });
+      }
+      const sHist = sleepHistory.find(s=>s.date===iso);
+      if(sHist){ sleepSum += sHist.hours; sleepDays++; }
+    } catch(e){}
+  }
+  return {
+    totalVolume: Math.round(totalVolume),
+    waterDaysHit,
+    avgSleep: sleepDays>0 ? (sleepSum/sleepDays).toFixed(1) : null,
+    avgHabitPct: habitsDaysCounted>0 ? Math.round((habitsSum/habitsDaysCounted)*100) : null,
+    daysActive,
+  };
+}
+function weeksSinceStart(){
+  let earliest = null;
+  for(let i=0;i<localStorage.length;i++){
+    const key = localStorage.key(i);
+    if(key && key.startsWith("log:")){
+      const date = key.slice(4);
+      if(!earliest || date<earliest) earliest = date;
+    }
+  }
+  if(!earliest) return 0;
+  const days = Math.floor((new Date(DATE) - new Date(earliest)) / 86400000);
+  return Math.floor(days/7);
+}
+function deloadDue(){
+  const w = weeksSinceStart();
+  return w>0 && w % 7 === 0;
+}
+function allDataSummary(){
+  let workoutDays=0, totalSets=0, mealsLoggedDays=0;
+  for(let i=0;i<localStorage.length;i++){
+    const key = localStorage.key(i);
+    if(key && key.startsWith("log:")){
+      try {
+        const d = JSON.parse(localStorage.getItem(key));
+        if(d.workout && Object.values(d.workout).some(v=>v)) workoutDays++;
+        if(d.meals && Object.values(d.meals).some(v=>v)) mealsLoggedDays++;
+      } catch(e){}
+    }
+    if(key && key.startsWith("exlog:")){
+      try {
+        const d = JSON.parse(localStorage.getItem(key));
+        Object.values(d).forEach(rec=>{ if(rec.sets) totalSets += rec.sets.length; });
+      } catch(e){}
+    }
+  }
+  return {
+    workoutDays, totalSets, mealsLoggedDays,
+    weightEntries: weightHistory.length,
+    sleepEntries: sleepHistory.length,
+    measureEntries: measureHistory.length,
+    photoEntries: photoHistory.length,
+    habitCount: loadHabitList().length,
+    injuryEntries: injuryLog.length,
+  };
+}
+function exportAllData(){
+  const data = {};
+  for(let i=0;i<localStorage.length;i++){
+    const key = localStorage.key(i);
+    try { data[key] = JSON.parse(localStorage.getItem(key)); }
+    catch(e){ data[key] = localStorage.getItem(key); }
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "chayil-data-backup-"+DATE+".json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function prHistoryList(){
+  return allExerciseNames().map(name=>{
+    const hist = getExerciseHistory(name);
+    if(hist.length===0) return null;
+    let best = 0, bestDate = "";
+    hist.forEach(h=>{ if(h.weight>best){ best=h.weight; bestDate=h.date; } });
+    return {name, best, date:bestDate};
+  }).filter(Boolean).sort((a,b)=>b.best-a.best);
+}
+function getAchievements(){
+  const workoutDays = countLoggedWorkoutDays();
+  const totalSets = countTotalSetsLogged();
+  const streak = getWorkoutStreak();
+  return [
+    { icon:"🏋️", name:"First Set", desc:"Log your very first set", done: totalSets >= 1 },
+    { icon:"🔥", name:"7-Day Streak", desc:"Train 7 days in a row (Sundays don't break it)", done: streak >= 7 },
+    { icon:"⚡", name:"30-Day Streak", desc:"A full month of consistency", done: streak >= 30 },
+    { icon:"🏆", name:"First PR", desc:"Beat your own record on any lift", done: anyPREverHit() },
+    { icon:"💪", name:"10 Workouts", desc:"Complete 10 total workout days", done: workoutDays >= 10 },
+    { icon:"🦁", name:"50 Workouts", desc:"Complete 50 total workout days", done: workoutDays >= 50 },
+    { icon:"📊", name:"Century Club", desc:"Log 100 total sets across all exercises", done: totalSets >= 100 },
+    { icon:"✅", name:"Habit Master", desc:"Complete every habit in a single day", done: (()=>{ const list=loadHabitList(); return list.length>0 && list.every(h=>!!log.habits[h]); })() },
+  ];
+}
+
 function allExerciseNames(){
   const set = new Set();
   WORKOUT_DAYS.forEach(d=>d.exercises.forEach(ex=>set.add(ex.name)));
@@ -439,11 +655,32 @@ function loadMeasureHistory(){
   catch(e){ return []; }
 }
 function saveMeasureHistory(h){ localStorage.setItem("measure-history", JSON.stringify(h)); }
+function loadSleepHistory(){
+  try { const raw = localStorage.getItem("sleep-history"); return raw ? JSON.parse(raw) : []; }
+  catch(e){ return []; }
+}
+function saveSleepHistory(h){ localStorage.setItem("sleep-history", JSON.stringify(h)); }
+function loadPhotoHistory(){
+  try { const raw = localStorage.getItem("photo-history"); return raw ? JSON.parse(raw) : []; }
+  catch(e){ return []; }
+}
+function savePhotoHistory(h){
+  try { localStorage.setItem("photo-history", JSON.stringify(h)); return true; }
+  catch(e){ alert("Storage is full — try deleting an older photo before adding a new one."); return false; }
+}
+function loadInjuryLog(){
+  try { const raw = localStorage.getItem("injury-log"); return raw ? JSON.parse(raw) : []; }
+  catch(e){ return []; }
+}
+function saveInjuryLog(h){ localStorage.setItem("injury-log", JSON.stringify(h)); }
 
 let log = loadLog();
 let exLog = loadExLog(DATE);
 let weightHistory = loadWeightHistory();
 let measureHistory = loadMeasureHistory();
+let sleepHistory = loadSleepHistory();
+let photoHistory = loadPhotoHistory();
+let injuryLog = loadInjuryLog();
 let currentTab = "today";
 let selectedStrengthExercise = null;
 let waterRemindersOn = localStorage.getItem("water-reminders-on") === "true";
@@ -548,41 +785,14 @@ const RECIPE_VIDEO_IDS = {
 function slugify(s){ return s.replace(/[^a-zA-Z0-9]/g,""); }
 
 function toggleVideo(uid, name, isMeal){
-  const box = document.getElementById("vidbox-"+uid);
-  if(!box) return;
-  if(box.style.display === "block"){
-    box.style.display = "none";
-    box.innerHTML = "";
-    return;
-  }
   const map = isMeal ? RECIPE_VIDEO_IDS : VIDEO_IDS;
   const id = map[name];
   const fallbackUrl = ytLink(name + (isMeal ? " recipe" : " proper form tutorial"));
   if(id){
-    box.innerHTML = ""; // clear first
-    const frame = document.createElement("div");
-    frame.className = "video-frame";
-    const iframe = document.createElement("iframe");
-    iframe.src = "https://www.youtube.com/embed/" + id;
-    iframe.title = name;
-    iframe.setAttribute("frameborder", "0");
-    iframe.setAttribute("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture");
-    iframe.allowFullscreen = true;
-    iframe.loading = "eager";
-    frame.appendChild(iframe);
-    box.appendChild(frame);
-    const link = document.createElement("a");
-    link.href = fallbackUrl;
-    link.target = "_blank";
-    link.rel = "noopener";
-    link.className = "video-fallback-link";
-    link.textContent = "Video not loading? Search instead →";
-    box.appendChild(link);
+    window.open("https://www.youtube.com/watch?v=" + id, "_blank");
   } else {
     window.open(fallbackUrl, "_blank");
-    return;
   }
-  box.style.display = "block";
 }
 
 function ytLink(query){
@@ -632,7 +842,11 @@ function renderToday(){
   const consumed = consumedToday();
   const weekKey = "w"+log.week;
   const waterTarget = waterTargetMl();
-  let html = `<div class="rings-card">
+  let html = "";
+  if(deloadDue()){
+    html += `<div class="deload-banner">⚡ You're about ${weeksSinceStart()} weeks into training — this is a good week for a deload. Drop weights 10-20%, keep reps up, and let your joints and CNS actually recover before pushing hard again.</div>`;
+  }
+  html += `<div class="rings-card">
     ${ring("Cal",consumed.cal,TARGETS.calories,"#E8A33D","")}
     ${ring("Protein",consumed.p,TARGETS.protein,"#8FA876","g")}
     ${ring("Carbs",consumed.c,TARGETS.carbs,"#4A7C7C","g")}
@@ -653,6 +867,25 @@ function renderToday(){
     <button class="water-reset" id="waterResetBtn">Reset today's water</button>
     <button class="reminder-btn" id="reminderToggleBtn">${waterRemindersOn ? "🔕 Turn off water reminders" : "🔔 Turn on water reminders"}</button>
     <div class="small-note" style="margin-top:8px;">Honest note: reminders only fire while this app is open on your screen or running in a background tab — phones don't allow a simple app like this to send notifications once it's fully closed (that needs a paid server-based push service). Treat this as a nudge while you're using your phone, and maybe set one phone alarm as backup for full-day coverage.</div>
+  </div>
+  <div class="water-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <div class="section-label" style="margin:0;">✅ Daily Habits</div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#8FA876;">${getHabitStreak()}🔥</span>
+    </div>`;
+  const habitList = loadHabitList();
+  habitList.forEach((h,i)=>{
+    const checked = !!log.habits[h];
+    html += `<label class="item-row ${checked?'checked-meal':''}" style="padding:10px 12px;">
+      <input type="checkbox" ${checked?'checked':''} data-habit-cb="${h.replace(/"/g,'&quot;')}" />
+      <div style="flex:1;font-size:13px;">${h}</div>
+      <button class="del-set-btn" data-del-habit-idx="${i}">✕</button>
+    </label>`;
+  });
+  html += `<div class="habit-add-row">
+      <input type="text" id="newHabitInput" class="mini-input" placeholder="Add a new habit..." />
+      <button class="save-ex-btn" id="addHabitBtn">Add</button>
+    </div>
   </div>
   <div class="section-label">Tap meals as you eat them</div>`;
   todaysMeals.meals.forEach(m=>{
@@ -824,6 +1057,31 @@ function renderRecovery(){
   <div class="supp-card">
     <div class="supp-h">🚶 Sunday — Active Recovery</div>
     <p>Rest day doesn't mean total stillness. A 20-30 minute walk, light stretching, or foam rolling actually speeds up recovery by moving blood through sore muscles, without adding training stress. Keep it easy — this isn't a workout, it's active rest.</p>
+  </div>
+
+  <div class="supp-card">
+    <div class="supp-h">🩹 Injury / Pain Log</div>
+    <p class="small-note" style="margin-top:-4px;margin-bottom:10px;">Quick notes when something feels off — helps you and a doctor (if it comes to that) see exactly when a niggle started and how it's progressed.</p>
+    <select id="injuryExerciseSelect" class="stat-select">
+      ${allExerciseNames().map(n=>`<option value="${n}">${n}</option>`).join('')}
+      <option value="General">General / not exercise-specific</option>
+    </select>
+    <textarea id="injuryNoteInput" class="injury-textarea" placeholder="What's going on? e.g. 'Sharp twinge in left shoulder on the last rep, felt it for the rest of the day.'"></textarea>
+    <button class="weight-save" id="injurySaveBtn" style="width:100%;">Log This</button>
+    <div style="margin-top:14px;">`;
+  if(injuryLog.length===0){
+    html += `<div class="small-note">No entries yet — hopefully it stays that way.</div>`;
+  } else {
+    [...injuryLog].reverse().forEach((entry, revIdx)=>{
+      const realIdx = injuryLog.length - 1 - revIdx;
+      html += `<div class="injury-row">
+        <div style="display:flex;justify-content:space-between;"><b style="font-size:13px;">${entry.exercise}</b><span class="hist-date">${entry.date}</span></div>
+        <div style="font-size:13px;color:#F2EFE9;margin-top:4px;">${entry.note}</div>
+        <button class="del-set-btn" data-del-injury-idx="${realIdx}" style="margin-top:6px;">Delete entry</button>
+      </div>`;
+    });
+  }
+  html += `</div>
   </div>`;
   return html;
 }
@@ -855,7 +1113,17 @@ function svgLineChart(points, color, unit){
 function renderInsights(){
   const streak = getWorkoutStreak();
   const stats = sessionStats();
+  const week = weeklySummary();
   let html = `<div class="progress-card">
+    <div class="progress-label">📅 This Week</div>
+    <div class="week-summary-grid">
+      <div class="week-summary-item"><div class="week-summary-val">${week.totalVolume}kg</div><div class="week-summary-label">Total Volume</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${week.daysActive}/6</div><div class="week-summary-label">Days Trained</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${week.avgSleep ? week.avgSleep+'h' : '—'}</div><div class="week-summary-label">Avg Sleep</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${week.waterDaysHit}/7</div><div class="week-summary-label">Water Goal Hit</div></div>
+    </div>
+  </div>
+  <div class="progress-card">
     <div class="progress-label">🔥 Consistency</div>
     <div style="font-family:'JetBrains Mono',monospace;font-size:28px;color:#E8A33D;">${streak} <span style="font-size:14px;color:#8A9490;">day streak</span></div>
   </div>`;
@@ -913,6 +1181,35 @@ function renderInsights(){
   });
   html += `</div>`;
 
+  // PR History — all-time best per exercise, one glance
+  const prList = prHistoryList();
+  html += `<div class="progress-card">
+    <div class="progress-label">🏆 PR History</div>`;
+  if(prList.length===0){
+    html += `<div class="small-note">No PRs yet — log a set on the Today tab to start building this.</div>`;
+  } else {
+    prList.forEach(pr=>{
+      html += `<div class="pr-row"><span>${pr.name}</span><span style="font-family:'JetBrains Mono',monospace;color:#E8A33D;">${pr.best}kg <span style="color:#8A9490;font-size:11px;">(${pr.date})</span></span></div>`;
+    });
+  }
+  html += `</div>`;
+
+  // Achievements
+  const achievements = getAchievements();
+  const unlockedCount = achievements.filter(a=>a.done).length;
+  html += `<div class="progress-card">
+    <div class="progress-label">🏅 Achievements (${unlockedCount}/${achievements.length})</div>`;
+  achievements.forEach(a=>{
+    html += `<div class="achievement-row ${a.done?'unlocked':''}">
+      <span class="achievement-icon">${a.done ? a.icon : '🔒'}</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;color:${a.done?'#F2EFE9':'#8A9490'};">${a.name}</div>
+        <div class="small-note">${a.desc}</div>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+
   // Coach's Corner
   html += `<div class="progress-card">
     <div class="progress-label">🎯 Coach's Corner</div>`;
@@ -949,6 +1246,24 @@ function renderProgress(){
   }
 
   let html = `<div class="progress-card">
+    <div class="progress-label">😴 Log last night's sleep</div>
+    <div class="weight-row">
+      <input type="number" placeholder="7.5 (hours)" id="sleepInput" class="weight-input" step="0.5" />
+      <button class="weight-save" id="sleepSaveBtn">Save</button>
+    </div>
+    ${(()=>{
+      const sorted = [...sleepHistory].sort((a,b)=>a.date.localeCompare(b.date));
+      if(sorted.length===0) return "";
+      const last7 = sorted.slice(-7);
+      const avg = (last7.reduce((s,x)=>s+x.hours,0)/last7.length).toFixed(1);
+      return `<div class="small-note" style="margin-top:8px;">7-day average: <b style="color:#4A9CD8;">${avg}h</b></div>`;
+    })()}
+  </div>
+  <div class="progress-card">
+    <div class="progress-label">Sleep trend</div>
+    ${svgLineChart([...sleepHistory].sort((a,b)=>a.date.localeCompare(b.date)).map(s=>({date:s.date, value:s.hours})), "#4A9CD8", "h")}
+  </div>
+  <div class="progress-card">
     <div class="progress-label">Log today's weight</div>
     <div class="weight-row">
       <input type="number" placeholder="73.0" id="weightInput" class="weight-input" />
@@ -1007,6 +1322,43 @@ function renderProgress(){
     </select>
     <div style="font-family:'JetBrains Mono',monospace;color:#E8A33D;font-size:14px;margin-bottom:8px;">Best logged: ${best>0?best+'kg':'—'}</div>
     ${svgLineChart(exHist.map(h=>({date:h.date, value:h.weight})), "#E8A33D", "kg")}
+  </div>
+
+  <div class="progress-card">
+    <div class="progress-label">📸 Progress Photos</div>
+    <label class="photo-upload-btn">
+      📷 Tap to add today's photo
+      <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;" />
+    </label>
+    <div class="small-note" style="margin-top:8px;">Photos are compressed and saved only on this phone — same as everything else in this app, nothing uploaded anywhere.</div>
+    <div class="photo-grid">`;
+  [...photoHistory].reverse().forEach((p,revIdx)=>{
+    const realIdx = photoHistory.length - 1 - revIdx;
+    html += `<div class="photo-thumb-wrap">
+      <img src="${p.dataUrl}" class="photo-thumb" />
+      <span class="photo-date-tag">${p.date}</span>
+      <button class="photo-del-btn" data-del-photo-idx="${realIdx}">✕</button>
+    </div>`;
+  });
+  html += `</div>
+  </div>`;
+
+  // All My Data — full summary + export
+  const summary = allDataSummary();
+  html += `<div class="progress-card">
+    <div class="progress-label">📦 All My Data</div>
+    <div class="week-summary-grid">
+      <div class="week-summary-item"><div class="week-summary-val">${summary.workoutDays}</div><div class="week-summary-label">Workout Days</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${summary.totalSets}</div><div class="week-summary-label">Sets Logged</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${summary.mealsLoggedDays}</div><div class="week-summary-label">Days Meals Logged</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${summary.weightEntries}</div><div class="week-summary-label">Weight Entries</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${summary.sleepEntries}</div><div class="week-summary-label">Sleep Entries</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${summary.measureEntries}</div><div class="week-summary-label">Measurements</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${summary.photoEntries}</div><div class="week-summary-label">Photos</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${summary.injuryEntries}</div><div class="week-summary-label">Injury Notes</div></div>
+    </div>
+    <button class="weight-save" id="exportDataBtn" style="width:100%;margin-top:14px;">⬇️ Download Full Backup (.json)</button>
+    <div class="small-note" style="margin-top:8px;">This saves EVERYTHING — every logged set, meal, weight, sleep entry, photo, and note — as one file to your phone. Worth doing every few weeks, since clearing your browser data or resetting your phone would otherwise erase all of this permanently.</div>
   </div>`;
   return html;
 }
@@ -1075,6 +1427,7 @@ function render(){
   renderTabs();
   document.getElementById("headerSub").textContent =
     `${todaysWorkout.tag} day · ${todaysMeals.style} menu`;
+  document.getElementById("verseLine").textContent = verseOfDay();
   const content = document.getElementById("content");
   if(currentTab==="today") content.innerHTML = renderToday();
   else if(currentTab==="insights") content.innerHTML = renderInsights();
@@ -1115,6 +1468,17 @@ function render(){
       weightHistory = [...weightHistory.filter(w=>w.date!==DATE), {date:DATE, weight:val}]
         .sort((a,b)=>a.date.localeCompare(b.date));
       saveWeightHistory(weightHistory);
+      render();
+    });
+  }
+  const sleepBtn = document.getElementById("sleepSaveBtn");
+  if(sleepBtn){
+    sleepBtn.addEventListener("click", ()=>{
+      const val = parseFloat(document.getElementById("sleepInput").value);
+      if(!val) return;
+      sleepHistory = [...sleepHistory.filter(s=>s.date!==DATE), {date:DATE, hours:val}]
+        .sort((a,b)=>a.date.localeCompare(b.date));
+      saveSleepHistory(sleepHistory);
       render();
     });
   }
@@ -1177,6 +1541,62 @@ function render(){
       render();
     });
   }
+  const photoInput = document.getElementById("photoInput");
+  if(photoInput){
+    photoInput.addEventListener("change", (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = (ev)=>{
+        img.onload = ()=>{
+          const maxW = 700;
+          const scale = Math.min(1, maxW/img.width);
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width*scale;
+          canvas.height = img.height*scale;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.6);
+          photoHistory = [...photoHistory.filter(p=>p.date!==DATE), {date:DATE, dataUrl}];
+          if(savePhotoHistory(photoHistory)) render();
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  content.querySelectorAll("[data-del-photo-idx]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const idx = parseInt(btn.dataset.delPhotoIdx, 10);
+      photoHistory.splice(idx, 1);
+      savePhotoHistory(photoHistory);
+      render();
+    });
+  });
+  const injurySaveBtn = document.getElementById("injurySaveBtn");
+  if(injurySaveBtn){
+    injurySaveBtn.addEventListener("click", ()=>{
+      const exercise = document.getElementById("injuryExerciseSelect").value;
+      const note = document.getElementById("injuryNoteInput").value.trim();
+      if(!note) return;
+      injuryLog.push({date:DATE, exercise, note});
+      saveInjuryLog(injuryLog);
+      render();
+    });
+  }
+  content.querySelectorAll("[data-del-injury-idx]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const idx = parseInt(btn.dataset.delInjuryIdx, 10);
+      injuryLog.splice(idx, 1);
+      saveInjuryLog(injuryLog);
+      render();
+    });
+  });
+  const exportBtn = document.getElementById("exportDataBtn");
+  if(exportBtn){
+    exportBtn.addEventListener("click", exportAllData);
+  }
   content.querySelectorAll("[data-water-add]").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       const ml = parseInt(btn.dataset.waterAdd, 10);
@@ -1190,6 +1610,35 @@ function render(){
     waterResetBtn.addEventListener("click", ()=>{
       log.water = 0;
       saveLog(log);
+      render();
+    });
+  }
+  content.querySelectorAll("[data-habit-cb]").forEach(cb=>{
+    cb.addEventListener("change", ()=>{
+      const h = cb.dataset.habitCb;
+      log.habits[h] = !log.habits[h];
+      saveLog(log);
+      render();
+    });
+  });
+  content.querySelectorAll("[data-del-habit-idx]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const idx = parseInt(btn.dataset.delHabitIdx, 10);
+      const list = loadHabitList();
+      list.splice(idx, 1);
+      saveHabitList(list);
+      render();
+    });
+  });
+  const addHabitBtn = document.getElementById("addHabitBtn");
+  if(addHabitBtn){
+    addHabitBtn.addEventListener("click", ()=>{
+      const input = document.getElementById("newHabitInput");
+      const val = input.value.trim();
+      if(!val) return;
+      const list = loadHabitList();
+      list.push(val);
+      saveHabitList(list);
       render();
     });
   }
