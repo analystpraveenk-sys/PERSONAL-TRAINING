@@ -135,13 +135,8 @@
 <body>
 
 <div class="header">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-    <div>
-      <div class="eyebrow">Chayil — Praveen's Build</div>
-      <div class="title">Strength & Discipline</div>
-    </div>
-    <button id="voiceToggleBtn" class="voice-toggle-btn"></button>
-  </div>
+  <div class="eyebrow">Chayil — Praveen's Build</div>
+  <div class="title">Strength & Discipline</div>
   <div class="subtitle" id="headerSub"></div>
   <div class="verse-line" id="verseLine"></div>
 </div>
@@ -291,8 +286,9 @@ function loadLog(){
     const parsed = raw ? JSON.parse(raw) : { meals:{}, workout:{}, week:1 };
     if(parsed.water === undefined) parsed.water = 0;
     if(parsed.habits === undefined) parsed.habits = {};
+    if(parsed.supplements === undefined) parsed.supplements = {};
     return parsed;
-  } catch(e){ return { meals:{}, workout:{}, week:1, water:0, habits:{} }; }
+  } catch(e){ return { meals:{}, workout:{}, week:1, water:0, habits:{}, supplements:{} }; }
 }
 function saveLog(log){ localStorage.setItem("log:"+DATE, JSON.stringify(log)); }
 function loadHabitList(){
@@ -302,6 +298,32 @@ function loadHabitList(){
   } catch(e){ return ["7+ hours sleep", "No smoking", "No alcohol", "Hit water goal", "10 min prayer/reflection", "Post-workout stretch done"]; }
 }
 function saveHabitList(list){ localStorage.setItem("habit-list", JSON.stringify(list)); }
+function loadSupplementList(){
+  try {
+    const raw = localStorage.getItem("supplement-list");
+    return raw ? JSON.parse(raw) : ["Creatine", "Protein", "Fish Oil", "ZMA (Magnesium)"];
+  } catch(e){ return ["Creatine", "Protein", "Fish Oil", "ZMA (Magnesium)"]; }
+}
+function saveSupplementList(list){ localStorage.setItem("supplement-list", JSON.stringify(list)); }
+function getSupplementStreak(){
+  let streak = 0;
+  let d = new Date();
+  const list = loadSupplementList();
+  if(list.length === 0) return 0;
+  for(let i=0;i<90;i++){
+    const iso = d.toISOString().slice(0,10);
+    try {
+      const raw = localStorage.getItem("log:"+iso);
+      if(raw){
+        const data = JSON.parse(raw);
+        const suppDone = data.supplements ? Object.values(data.supplements).filter(Boolean).length : 0;
+        if(suppDone >= list.length){ streak++; d.setDate(d.getDate()-1); continue; }
+      }
+    } catch(e){}
+    break;
+  }
+  return streak;
+}
 function getHabitStreak(){
   let streak = 0;
   let d = new Date();
@@ -939,6 +961,25 @@ function renderToday(){
       <button class="save-ex-btn" id="addHabitBtn">Add</button>
     </div>
   </div>
+  <div class="water-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <div class="section-label" style="margin:0;">💊 Supplements</div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#7A9E85;">${getSupplementStreak()}🔥</span>
+    </div>`;
+  const supplementList = loadSupplementList();
+  supplementList.forEach((s,i)=>{
+    const checked = !!log.supplements[s];
+    html += `<label class="item-row ${checked?'checked-meal':''}" style="padding:10px 12px;">
+      <input type="checkbox" ${checked?'checked':''} data-supp-cb="${s.replace(/"/g,'&quot;')}" />
+      <div style="flex:1;font-size:13px;">${s}${checked ? ' <span class="saved-tag">✓ Taken</span>' : ''}</div>
+      <button class="del-set-btn" data-del-supp-idx="${i}">✕</button>
+    </label>`;
+  });
+  html += `<div class="habit-add-row">
+      <input type="text" id="newSuppInput" class="mini-input" placeholder="Add a new supplement..." />
+      <button class="save-ex-btn" id="addSuppBtn">Add</button>
+    </div>
+  </div>
   <div class="section-label">Tap meals as you eat them</div>`;
   todaysMeals.meals.forEach(m=>{
     const checked = !!log.meals[m.slot];
@@ -1438,18 +1479,9 @@ function renderProgress(){
 }
 
 let restTimerInterval = null;
-let voiceEnabled = localStorage.getItem("voice-enabled") !== "false";
+let voiceEnabled = false; // voice feature disabled by user request
 function speak(text){
-  if(!voiceEnabled) return;
-  if(!("speechSynthesis" in window)) return;
-  try {
-    window.speechSynthesis.cancel(); // don't stack overlapping speech
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 1.0;
-    u.pitch = 1.0;
-    u.volume = 1.0;
-    window.speechSynthesis.speak(u);
-  } catch(e){}
+  return; // no-op — sound intentionally removed from this app
 }
 function startRestTimer(seconds){
   const bar = document.getElementById("restTimerBar");
@@ -1482,19 +1514,6 @@ function startRestTimer(seconds){
 document.getElementById("restTimerSkip").addEventListener("click", ()=>{
   if(restTimerInterval){ clearInterval(restTimerInterval); restTimerInterval = null; }
   document.getElementById("restTimerBar").style.display = "none";
-});
-
-function updateVoiceBtn(){
-  const btn = document.getElementById("voiceToggleBtn");
-  btn.textContent = voiceEnabled ? "🔊 Voice on" : "🔇 Voice off";
-}
-updateVoiceBtn();
-document.getElementById("voiceToggleBtn").addEventListener("click", ()=>{
-  voiceEnabled = !voiceEnabled;
-  localStorage.setItem("voice-enabled", voiceEnabled ? "true" : "false");
-  if(!voiceEnabled && "speechSynthesis" in window) window.speechSynthesis.cancel();
-  updateVoiceBtn();
-  if(voiceEnabled) speak("Voice is on. I'll talk you through sets, rest, and water check-ins.");
 });
 
 function render(){
@@ -1713,6 +1732,35 @@ function render(){
       const list = loadHabitList();
       list.push(val);
       saveHabitList(list);
+      render();
+    });
+  }
+  content.querySelectorAll("[data-supp-cb]").forEach(cb=>{
+    cb.addEventListener("change", ()=>{
+      const s = cb.dataset.suppCb;
+      log.supplements[s] = !log.supplements[s];
+      saveLog(log);
+      render();
+    });
+  });
+  content.querySelectorAll("[data-del-supp-idx]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const idx = parseInt(btn.dataset.delSuppIdx, 10);
+      const list = loadSupplementList();
+      list.splice(idx, 1);
+      saveSupplementList(list);
+      render();
+    });
+  });
+  const addSuppBtn = document.getElementById("addSuppBtn");
+  if(addSuppBtn){
+    addSuppBtn.addEventListener("click", ()=>{
+      const input = document.getElementById("newSuppInput");
+      const val = input.value.trim();
+      if(!val) return;
+      const list = loadSupplementList();
+      list.push(val);
+      saveSupplementList(list);
       render();
     });
   }
