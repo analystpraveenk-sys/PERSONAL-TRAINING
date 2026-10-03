@@ -91,6 +91,18 @@
   .af-filter { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
   .af-filter-btn { padding:6px 12px; border-radius:16px; border:1px solid #212D3D; background:#0D1520; color:#8B96A3; font-size:12px; font-weight:600; cursor:pointer; }
   .af-filter-btn.active { background:#C2703D; color:#0D1520; border-color:#C2703D; }
+  .arc-hero { background:linear-gradient(135deg,#16202E,#1B3347); border:1px solid #2A4A66; border-radius:18px; padding:18px; margin-bottom:14px; }
+  .arc-title { font-family:'Oswald',sans-serif; font-size:24px; color:#F2EFE9; letter-spacing:.5px; }
+  .arc-sub { font-size:12px; color:#8B96A3; margin-top:3px; line-height:1.5; }
+  .arc-count { font-family:'JetBrains Mono',monospace; color:#7DD3FC; font-size:13px; margin-top:10px; }
+  .arc-weeks { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-top:14px; }
+  .arc-wk { padding:8px 0; text-align:center; border-radius:8px; font-size:11px; font-family:'JetBrains Mono',monospace; border:1px solid #212D3D; background:#0D1520; color:#8B96A3; }
+  .arc-wk.past { border-color:#4ADE80; color:#4ADE80; }
+  .arc-wk.now { background:#C2703D; border-color:#C2703D; color:#0D1520; font-weight:700; box-shadow:0 0 10px rgba(194,112,61,.5); }
+  .arc-wk.dl { border-style:dashed; }
+  .arc-check { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #1A2530; font-size:13px; }
+  .arc-check .mark { width:22px; text-align:center; font-size:15px; }
+  .arc-lift { padding:10px 0; border-bottom:1px solid #1A2530; }
   .af-chips { display:flex; flex-wrap:wrap; gap:6px; }
   .af-chip { font-size:11px; padding:3px 9px; border-radius:10px; background:#0D1520; color:#7A9E85; border:1px solid #212D3D; font-family:'JetBrains Mono',monospace; }
   .achievement-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #1A2530; opacity:0.55; }
@@ -288,6 +300,24 @@ const GROCERY = [
   { cat:"Gut-friendly extras", items:["Ajwain & jeera (for digestion)","Chia/flax seeds — 100g (soak, don't overdo)","Isabgol/psyllium husk — 1 pack (only if needed)"] }
 ];
 
+/* ---------------- WINTER ARC CALENDAR ---------------- */
+const WINTER_START = "2026-10-05";   // Monday — week 1 of 12
+const WINTER_WEEKS = 12;
+const GOAL_DATE = "2026-12-25";
+const HEAVY_LIFTS = ["Barbell Bench Press","Back Squat","Deadlift","Overhead Press","Barbell Row","Romanian Deadlift","Close Grip Bench Press"];
+function daysBetweenISO(a, b){ return Math.round((new Date(b) - new Date(a)) / 86400000); }
+function addDaysISO(iso, n){ return new Date(Date.parse(iso) + n*86400000).toISOString().slice(0,10); }
+function fmtDay(iso){ return new Date(iso + "T00:00:00Z").toLocaleDateString("en-GB", { day:"numeric", month:"short", timeZone:"UTC" }); }
+function programWeekInfo(){
+  const d = daysBetweenISO(WINTER_START, DATE);
+  if(d < 0) return { status:"pre", daysToStart:-d, weekNum:0, blockWeek:1, block:1 };
+  const weekNum = Math.floor(d/7) + 1;
+  return {
+    status: weekNum > WINTER_WEEKS ? "done" : "active",
+    weekNum, blockWeek: ((weekNum-1) % 4) + 1, block: Math.floor((weekNum-1)/4) + 1, dayOfArc: d
+  };
+}
+
 /* ---------------- STATE ---------------- */
 function todayISO(){ return new Date().toISOString().slice(0,10); }
 const DATE = todayISO();
@@ -300,7 +330,7 @@ const todaysWorkout = WORKOUT_DAYS.find(w => w.day === workoutDayNames[dayIndex]
 function loadLog(){
   try {
     const raw = localStorage.getItem("log:"+DATE);
-    const parsed = raw ? JSON.parse(raw) : { meals:{}, workout:{}, week:1 };
+    const parsed = raw ? JSON.parse(raw) : { meals:{}, workout:{}, week: programWeekInfo().blockWeek };
     if(parsed.water === undefined) parsed.water = 0;
     if(parsed.habits === undefined) parsed.habits = {};
     if(parsed.supplements === undefined) parsed.supplements = {};
@@ -851,7 +881,7 @@ function consumedToday(){
 }
 
 /* ---------------- RENDER ---------------- */
-const TABS = [["today","Today"],["insights","Insights"],["workout","Workout"],["meals","Meals"],["airfryer","Air Fryer"],["grocery","Grocery"],["recovery","Recovery"],["progress","Progress"]];
+const TABS = [["today","Today"],["arc","Winter Arc"],["insights","Insights"],["workout","Workout"],["meals","Meals"],["airfryer","Air Fryer"],["grocery","Grocery"],["recovery","Recovery"],["progress","Progress"]];
 
 function renderTabs(){
   const el = document.getElementById("tabs");
@@ -1062,7 +1092,7 @@ function renderToday(){
       <div class="item-macro">${m.cal}kcal<br>${m.p}P</div>
     </label>`;
   });
-  html += `<div class="section-label">Today's lifts — ${todaysWorkout.tag}</div>`;
+  html += `<div class="section-label">Today's lifts — ${todaysWorkout.tag}${todaysWorkout.exercises.length ? " · Week " + log.week : ""}</div>`;
   if(todaysWorkout.exercises.length===0){
     html += `<div class="rest-note">Rest day. Walk, stretch, hydrate.</div>`;
   } else {
@@ -1107,7 +1137,7 @@ function renderToday(){
 }
 
 function renderWorkout(){
-  let html = `<div class="week-picker">`;
+  let html = `<div class="small-note" style="margin-bottom:8px;">The week is set automatically from your Winter Arc calendar (this week = Week ${programWeekInfo().blockWeek}). Tap another week to preview it.</div><div class="week-picker">`;
   [1,2,3,4].forEach(w=>{
     html += `<button class="week-btn ${log.week===w?'active':''}" data-week="${w}">Week ${w}</button>`;
   });
@@ -1169,6 +1199,135 @@ function renderGrocery(){
     g.items.forEach(it=>{ html += `<div class="grocery-item">• ${it}</div>`; });
     html += `</div>`;
   });
+  return html;
+}
+
+function weightTrend(){
+  const pts = [...weightHistory].sort((a,b)=>a.date.localeCompare(b.date)).filter(w => daysBetweenISO(w.date, DATE) <= 28);
+  if(pts.length < 3) return null;
+  const base = pts[0].date;
+  const span = daysBetweenISO(base, pts[pts.length-1].date);
+  if(span < 10) return null;
+  const xs = pts.map(p => daysBetweenISO(base, p.date));
+  const ys = pts.map(p => p.weight);
+  const n = pts.length, mx = xs.reduce((a,b)=>a+b,0)/n, my = ys.reduce((a,b)=>a+b,0)/n;
+  let num = 0, den = 0;
+  xs.forEach((x,i)=>{ num += (x-mx)*(ys[i]-my); den += (x-mx)*(x-mx); });
+  if(den === 0) return null;
+  return { perWeek: (num/den)*7, entries: n, span, latest: pts[pts.length-1].weight };
+}
+function firstAndBest1RM(name){
+  const hist = getExerciseHistory(name);
+  if(hist.length === 0) return null;
+  const e = (sets)=> Math.max(...sets.map(x => (x.weight||0) * (1 + (x.reps||1)/30)));
+  return { first: Math.round(e(hist[0].sets)), best: bestEstimated1RM(name), sessions: hist.length };
+}
+function renderArc(){
+  const info = programWeekInfo();
+  const goalDays = daysBetweenISO(DATE, GOAL_DATE);
+  const total = WINTER_WEEKS * 7;
+  const elapsed = Math.max(0, Math.min(total, daysBetweenISO(WINTER_START, DATE) + 1));
+  const pct = Math.round(elapsed/total*100);
+  const blockNames = ["Base", "Build", "Peak"];
+  const blockStart = (b)=> addDaysISO(WINTER_START, (b-1)*28);
+  let head;
+  if(info.status === "pre") head = `Starts Monday ${fmtDay(WINTER_START)} — ${info.daysToStart} day${info.daysToStart===1?"":"s"} to go`;
+  else if(info.status === "active") head = `Week ${info.weekNum} of ${WINTER_WEEKS} · Block ${info.block} (${blockNames[info.block-1]}) · Week ${info.blockWeek}/4`;
+  else head = `All ${WINTER_WEEKS} weeks done — run another block`;
+  const goalTxt = goalDays > 0 ? `${goalDays} day${goalDays===1?"":"s"} to ${fmtDay(GOAL_DATE)}` : goalDays === 0 ? `Today is ${fmtDay(GOAL_DATE)}` : `${fmtDay(GOAL_DATE)} has passed`;
+
+  let weeks = "";
+  for(let i=1;i<=WINTER_WEEKS;i++){
+    const st = info.status === "pre" ? "" : (info.weekNum > i ? "past" : info.weekNum === i ? "now" : "");
+    weeks += `<div class="arc-wk ${st} ${i%4===0?'dl':''}" title="${i%4===0?'Deload week':''}">W${i}</div>`;
+  }
+
+  const focus = {
+    1: "Re-find your working weights. Leave about 2 reps in reserve (RPE 7) and log every set so there's a number to beat. In blocks 2 and 3, start where last block's week 3 ended.",
+    2: "Add 2.5kg (upper body) or 5kg (lower body) to any lift where every rep was clean last week. RPE 8.",
+    3: "Heavy week. Top sets at RPE 8–9 — about 1 rep left in the tank — with 2–3 minute rests on the big lifts. This is where PRs come from.",
+    4: "Deload. Cut the sets by about a third and the weight by about 10%. Sleep, eat well, and let your joints recover so the next block goes heavier."
+  };
+  const blockNote = ["Block 1 is about solid form and honest baseline weights.", "Block 2 is where you build — beat last block's numbers.", "Block 3 is the peak: chase PRs in week 3, then deload and take your photos."][Math.min(info.block,3)-1];
+
+  let html = `<div class="arc-hero">
+    <div class="arc-title">❄ Winter Arc</div>
+    <div class="arc-sub">${head}</div>
+    <div class="arc-count">${goalTxt}</div>
+    <div class="bar-bg" style="margin:10px 0 0;"><div class="bar-fill" style="width:${pct}%;background:linear-gradient(90deg,#38BDF8,#C2703D);"></div></div>
+    <div class="arc-weeks">${weeks}</div>
+    <div class="small-note" style="margin-top:8px;">Dashed weeks (4, 8, 12) are deloads. Block 1: ${fmtDay(blockStart(1))}–${fmtDay(addDaysISO(blockStart(1),27))} · Block 2: ${fmtDay(blockStart(2))}–${fmtDay(addDaysISO(blockStart(2),27))} · Block 3: ${fmtDay(blockStart(3))}–${fmtDay(addDaysISO(blockStart(3),27))}</div>
+  </div>`;
+
+  html += `<div class="progress-card">
+    <div class="progress-label">🎯 This week's focus${info.status==="active" ? ` — Week ${info.blockWeek}` : ""}</div>
+    <div style="font-size:13px;line-height:1.6;">${focus[info.blockWeek]}</div>
+    <div class="small-note" style="margin-top:8px;">${blockNote}</div>
+  </div>`;
+
+  // Lean-bulk weight trend
+  const tr = weightTrend();
+  html += `<div class="progress-card">
+    <div class="progress-label">⚖️ Lean-bulk weight trend</div>`;
+  if(!tr){
+    html += `<div class="small-note">Log your weight on the Progress tab — same day and time each week. After 3 weigh-ins spread over 10+ days, this shows your trend and tells you whether to eat more or less.</div>`;
+  } else {
+    const r = tr.perWeek;
+    let verdict, color;
+    if(r < 0.1){ verdict = r < -0.1 ? "You're losing weight on a bulk. Eat more — add about 250 kcal a day (a roti, a banana and a glass of milk)." : "Barely moving. Add about 150 kcal a day — an extra roti and a banana."; color = "#FFB347"; }
+    else if(r <= 0.5){ verdict = "On track — about 0.25–0.5 kg a week is the sweet spot for adding muscle without much fat. Keep the menu as it is."; color = "#4ADE80"; }
+    else { verdict = "Gaining a bit fast — some of it will be fat. Trim about 100–150 kcal a day (one less roti or a smaller portion of rice)."; color = "#F472B6"; }
+    html += `<div style="font-family:'JetBrains Mono',monospace;font-size:26px;color:${color};">${r>=0?"+":""}${r.toFixed(2)} <span style="font-size:13px;color:#8B96A3;">kg / week</span></div>
+      <div style="font-size:13px;line-height:1.55;margin-top:6px;">${verdict}</div>
+      <div class="small-note" style="margin-top:6px;">Based on ${tr.entries} weigh-ins over ${tr.span} days (latest ${tr.latest}kg). Daily weight swings 0.5–1kg from food and water, so judge the 2–3 week trend, not single days.</div>`;
+  }
+  html += `</div>`;
+
+  // Strength gains
+  html += `<div class="progress-card">
+    <div class="progress-label">💪 Strength gains (estimated 1RM)</div>
+    <div class="small-note" style="margin-bottom:6px;">First logged session → best so far. About +10% over the 12 weeks is a reasonable target.</div>`;
+  ["Barbell Bench Press","Back Squat","Deadlift","Overhead Press"].forEach(name=>{
+    const f = firstAndBest1RM(name);
+    if(!f){
+      html += `<div class="arc-lift"><b style="font-size:13px;">${name}</b><div class="small-note">No sets logged yet.</div></div>`;
+      return;
+    }
+    const chg = f.first > 0 ? Math.round((f.best - f.first)/f.first*100) : 0;
+    const goal = Math.round(f.first * 1.10);
+    html += `<div class="arc-lift">
+      <div style="display:flex;justify-content:space-between;font-size:13px;"><b>${name}</b><span style="font-family:'JetBrains Mono',monospace;color:${chg>0?'#4ADE80':'#8B96A3'};">${chg>0?'+':''}${chg}%</span></div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#8B96A3;margin-top:2px;">${f.first}kg → ${f.best}kg · goal ${goal}kg · ${f.sessions} session${f.sessions===1?'':'s'}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Weekly check-ins
+  const within = (arr, days)=> arr.some(x => { const d = daysBetweenISO(x.date, DATE); return d >= 0 && d <= days; });
+  const sleep7 = sleepHistory.filter(x => { const d = daysBetweenISO(x.date, DATE); return d >= 0 && d <= 6; }).length;
+  const checks = [
+    { ok: within(weightHistory, 6),  label: "Weighed in this week" },
+    { ok: within(photoHistory, 13),  label: "Progress photo in the last 2 weeks" },
+    { ok: within(measureHistory, 13), label: "Measurements in the last 2 weeks" },
+    { ok: sleep7 >= 4,               label: `Sleep logged most nights (${sleep7}/7)` },
+  ];
+  html += `<div class="progress-card">
+    <div class="progress-label">✅ Check-ins</div>`;
+  checks.forEach(c=>{ html += `<div class="arc-check"><span class="mark" style="color:${c.ok?'#4ADE80':'#8B96A3'};">${c.ok?'✓':'○'}</span><span>${c.label}</span></div>`; });
+  html += `<div class="small-note" style="margin-top:8px;">Log these on the Progress tab. Sunday is a good day for all four.</div></div>`;
+
+  // Going heavy safely
+  html += `<div class="progress-card">
+    <div class="progress-label">🏋️ Going heavy, the smart way</div>
+    <div style="font-size:13px;line-height:1.65;">
+      <p style="margin:0 0 8px;"><b>Warm up in steps:</b> empty bar, then about 50% for 5, 70% for 3, 85% for 1–2, then your working sets.</p>
+      <p style="margin:0 0 8px;"><b>Rest longer on the big lifts.</b> The timer now runs 2:30 after bench, squat, deadlift, overhead press, rows and RDLs, and 1:30 for everything else.</p>
+      <p style="margin:0 0 8px;"><b>Stop 1–2 reps short of failure</b> on the heavy compounds. Save failure and drop sets for isolation work.</p>
+      <p style="margin:0 0 8px;"><b>Add weight only when every rep was clean:</b> +2.5kg upper body, +5kg lower body.</p>
+      <p style="margin:0 0 8px;"><b>In a busy gym,</b> set the safety pins before you start a squat or bench, and have a machine or dumbbell alternative ready if the bar is taken.</p>
+      <p style="margin:0;"><b>Recovery decides growth:</b> 7–8 hours of sleep, hit your food-based protein every day, and take the deload week seriously.</p>
+    </div>
+  </div>`;
   return html;
 }
 
@@ -1662,11 +1821,15 @@ document.getElementById("restTimerSkip").addEventListener("click", ()=>{
 
 function render(){
   renderTabs();
+  const _pw = programWeekInfo();
+  const _arcTxt = _pw.status === "active" ? `Winter Arc · Week ${_pw.weekNum}/${WINTER_WEEKS} · `
+                : _pw.status === "pre" ? `Winter Arc starts ${fmtDay(WINTER_START)} · ` : "";
   document.getElementById("headerSub").textContent =
-    `${todaysWorkout.tag} day · ${todaysMeals.style} menu`;
+    `${_arcTxt}${todaysWorkout.tag} day · ${todaysMeals.style} menu`;
   document.getElementById("verseLine").textContent = verseOfDay();
   const content = document.getElementById("content");
   if(currentTab==="today") content.innerHTML = renderToday();
+  else if(currentTab==="arc") content.innerHTML = renderArc();
   else if(currentTab==="insights") content.innerHTML = renderInsights();
   else if(currentTab==="workout") content.innerHTML = renderWorkout();
   else if(currentTab==="meals") content.innerHTML = renderMeals();
@@ -1755,7 +1918,7 @@ function render(){
       if(wasPR){
         celebrate("🏆 New PR! " + weightVal + "kg — " + name);
       }
-      startRestTimer(90);
+      startRestTimer(HEAVY_LIFTS.includes(name) ? 150 : 90);
       render();
     });
   });
