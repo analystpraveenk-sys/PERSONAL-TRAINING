@@ -68,6 +68,31 @@
   .coach-tip { background:#0D1520; border-left:3px solid #C2703D; border-radius:6px; padding:10px 12px; margin-bottom:8px; font-size:13px; line-height:1.5; }
   .voice-toggle-btn { background:#16202E; border:1px solid #212D3D; border-radius:20px; padding:8px 12px; font-size:16px; cursor:pointer; flex-shrink:0; }
   .habit-add-row { display:flex; gap:8px; margin-top:10px; }
+  .ring-svg { position:relative; width:80px; height:80px; }
+  .ring-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  @keyframes ringDraw { from { stroke-dashoffset: var(--circ); } to { stroke-dashoffset: var(--off); } }
+  .ring-anim { animation: ringDraw 1.1s cubic-bezier(.22,.8,.3,1) both; }
+  .score-card { background:linear-gradient(135deg,#16202E,#1C2838); border:1px solid #212D3D; border-radius:18px; padding:16px; margin-bottom:16px; display:flex; gap:14px; align-items:center; }
+  .score-ring-wrap { position:relative; width:128px; height:128px; flex-shrink:0; }
+  .score-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .score-pct { font-family:'Oswald',sans-serif; font-size:32px; font-weight:700; color:#F2EFE9; line-height:1; }
+  .score-sub { font-size:10px; letter-spacing:1px; text-transform:uppercase; color:#8B96A3; margin-top:3px; text-align:center; }
+  .score-list { flex:1; display:flex; flex-direction:column; gap:8px; min-width:0; }
+  .score-row { display:flex; align-items:center; gap:8px; font-size:12px; }
+  .score-row .lbl { width:58px; color:#F2EFE9; }
+  .score-row .bar { flex:1; height:7px; border-radius:4px; background:#212D3D; overflow:hidden; }
+  .score-row .bar > i { display:block; height:100%; border-radius:4px; }
+  .score-row .val { font-family:'JetBrains Mono',monospace; font-size:11px; color:#8B96A3; width:34px; text-align:right; }
+  .celebrate-toast { position:fixed; top:14px; left:50%; transform:translateX(-50%) translateY(-20px); opacity:0; background:linear-gradient(135deg,#C2703D,#FF8A3D); color:#0D1520; font-weight:700; font-size:14px; padding:12px 20px; border-radius:14px; z-index:3100; box-shadow:0 6px 24px rgba(0,0,0,.45); transition:all .35s cubic-bezier(.22,.8,.3,1); pointer-events:none; max-width:90vw; text-align:center; }
+  .celebrate-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .video-btn-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .video-open-btn { display:inline-block; padding:8px 12px; border-radius:8px; background:#C2703D; color:#0D1520; font-size:12px; font-weight:700; text-decoration:none; }
+  .video-open-btn.secondary { background:transparent; color:#8B96A3; border:1px solid #212D3D; font-weight:600; }
+  .af-filter { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  .af-filter-btn { padding:6px 12px; border-radius:16px; border:1px solid #212D3D; background:#0D1520; color:#8B96A3; font-size:12px; font-weight:600; cursor:pointer; }
+  .af-filter-btn.active { background:#C2703D; color:#0D1520; border-color:#C2703D; }
+  .af-chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .af-chip { font-size:11px; padding:3px 9px; border-radius:10px; background:#0D1520; color:#7A9E85; border:1px solid #212D3D; font-family:'JetBrains Mono',monospace; }
   .achievement-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #1A2530; opacity:0.55; }
   .achievement-row.unlocked { opacity:1; }
   .achievement-icon { font-size:24px; width:32px; text-align:center; }
@@ -89,13 +114,9 @@
   .session-stats { display:flex; justify-content:space-around; background:#16202E; border-radius:16px; padding:16px 10px; margin-bottom:14px; }
   .session-stat-val { font-family:'JetBrains Mono',monospace; font-size:20px; font-weight:700; }
   .stat-select { width:100%; padding:10px 12px; border-radius:8px; border:1px solid #212D3D; background:#0D1520; color:#F2EFE9; font-size:14px; margin-bottom:10px; }
-  .water-card { background:#16202E; border-radius:16px; padding:16px 18px; margin-bottom:18px; }
-  .water-bar-bg { width:100%; height:14px; border-radius:7px; background:#212D3D; overflow:hidden; margin:10px 0; }
-  .water-bar-fill { height:100%; background:linear-gradient(90deg, #4A8FC2, #6BA8C4); border-radius:7px; transition:width .25s; }
-  .water-btn-row { display:flex; gap:8px; margin-top:10px; }
-  .water-btn { flex:1; padding:10px 0; border-radius:8px; border:1px solid #212D3D; background:#0D1520; color:#4A8FC2; font-weight:700; font-size:13px; cursor:pointer; }
-  .water-reset { background:none; border:none; color:#8B96A3; font-size:11px; text-decoration:underline; cursor:pointer; margin-top:8px; }
-  .reminder-btn { width:100%; margin-top:12px; padding:10px 0; border-radius:8px; border:1px solid #4A8FC2; background:transparent; color:#4A8FC2; font-weight:700; font-size:13px; cursor:pointer; }
+  .panel-card { background:#16202E; border-radius:16px; padding:16px 18px; margin-bottom:18px; }
+  .bar-bg { width:100%; height:14px; border-radius:7px; background:#212D3D; overflow:hidden; margin:10px 0; }
+  .bar-fill { height:100%; background:linear-gradient(90deg, #4A8FC2, #6BA8C4); border-radius:7px; transition:width .25s; }
   .rest-note { padding:14px; background:#16202E; border-radius:12px; color:#8B96A3; font-size:13px; }
   .week-picker { display:flex; gap:8px; margin-bottom:16px; }
   .week-btn { flex:1; padding:8px 0; border-radius:8px; border:none; cursor:pointer; background:#16202E; color:#A8B3C2; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; }
@@ -213,57 +234,58 @@ const WORKOUT_DAYS = [
 ];
 
 const MEAL_DAYS = [
-  { day:"Day 1", style:"Veg", meals:[
-    {slot:"Breakfast", items:"3 whole eggs + 2 egg whites bhurji (little oil), 2 multigrain roti, 1 bowl curd", cal:620,p:38,c:45,f:28, dish:"Egg bhurji"},
-    {slot:"Mid-Morning", items:"1 banana + 2 tbsp peanut butter", cal:320,p:9,c:32,f:17, dish:null},
-    {slot:"Lunch", items:"1.5 cup rice, 1 cup rajma/dal, 150g paneer bhurji, cucumber-tomato salad, 1 cup curd", cal:850,p:45,c:100,f:24, dish:"Rajma"},
-    {slot:"Evening", items:"1 scoop whey in water + 1 handful roasted chana", cal:320,p:32,c:25,f:6, dish:null},
-    {slot:"Dinner", items:"2 roti, 200g soya chunk curry, sautéed spinach, 1 bowl curd", cal:620,p:38,c:60,f:18, dish:"Soya chunk curry"} ]},
+  { day:"Day 1", style:"Veg + Egg", meals:[
+    {slot:"Breakfast", items:"2 whole eggs + 5 egg whites bhurji (1 tsp oil), 3 roti", cal:641,p:41,c:62,f:24, dish:"Egg bhurji"},
+    {slot:"Mid-Morning", items:"Oats (50g) cooked in 200ml milk + 1 banana", cal:415,p:16,c:69,f:10, dish:"Oats porridge"},
+    {slot:"Lunch", items:"1.5 cup rice, 1 cup rajma, 80g paneer bhurji, cucumber-tomato salad", cal:850,p:36,c:121,f:24, dish:"Rajma"},
+    {slot:"Evening", items:"200g hung curd + 40g roasted chana + 1 apple", cal:403,p:24,c:57,f:10, dish:null},
+    {slot:"Dinner", items:"2 roti, soya chunk curry (60g dry soya), sautéed spinach, 1 bowl curd", cal:697,p:48,c:85,f:19, dish:"Soya chunk curry"} ]},
   { day:"Day 2", style:"Non-Veg", meals:[
-    {slot:"Breakfast", items:"Oats (60g dry) cooked in milk with banana + 6 almonds", cal:560,p:22,c:75,f:16, dish:"Oats porridge"},
-    {slot:"Mid-Morning", items:"Sprouts chaat (1.5 cup) with lemon", cal:260,p:14,c:38,f:4, dish:"Sprouts chaat"},
-    {slot:"Lunch", items:"1.5 cup rice, 200g grilled chicken breast curry, 1 cup dal, salad, 1 cup curd", cal:880,p:62,c:85,f:20, dish:"Chicken curry"},
-    {slot:"Evening", items:"1 scoop whey + 1 apple", cal:300,p:27,c:30,f:4, dish:null},
-    {slot:"Dinner", items:"2 roti, 150g chicken/egg curry, mixed veg sabzi, 1 bowl curd", cal:630,p:42,c:55,f:20, dish:"Chicken egg curry"} ]},
-  { day:"Day 3", style:"Veg", meals:[
-    {slot:"Breakfast", items:"4 egg whites + 1 whole egg omelette, 2 besan chilla, 1 bowl curd", cal:600,p:40,c:40,f:26, dish:"Egg white omelette"},
-    {slot:"Mid-Morning", items:"1 bowl fruit chaat (papaya, guava, orange)", cal:220,p:3,c:50,f:1, dish:null},
-    {slot:"Lunch", items:"2 roti + 1 cup rice, kadhi + 150g paneer tikka, salad, buttermilk", cal:830,p:44,c:95,f:24, dish:"Kadhi"},
-    {slot:"Evening", items:"1 scoop whey + 4 walnuts", cal:300,p:28,c:12,f:15, dish:null},
-    {slot:"Dinner", items:"3 roti, 1 cup moong dal, lauki sabzi, 1 bowl curd", cal:600,p:30,c:88,f:11, dish:"Moong dal"} ]},
+    {slot:"Breakfast", items:"Oats (60g) cooked in 250ml milk + banana, 6 almonds, 4 boiled egg whites", cal:593,p:35,c:81,f:16, dish:"Oats porridge"},
+    {slot:"Mid-Morning", items:"1.5 cup sprouts chaat + 20g roasted peanuts + 1 orange", cal:355,p:20,c:48,f:11, dish:"Sprouts chaat"},
+    {slot:"Lunch", items:"1.5 cup rice, chicken curry (100g chicken), 1 cup dal, salad", cal:813,p:53,c:116,f:14, dish:"Chicken curry"},
+    {slot:"Evening", items:"50g air-fried chicken tikka + banana + sattu drink + 3 dates", cal:376,p:24,c:63,f:4, dish:"Air fryer chicken tikka"},
+    {slot:"Dinner", items:"3 roti, egg curry (2 eggs), mixed veg sabzi, 1 bowl curd", cal:766,p:33,c:86,f:32, dish:"Egg curry"} ]},
+  { day:"Day 3", style:"Veg + Egg", meals:[
+    {slot:"Breakfast", items:"1 whole egg + 3 egg whites omelette, 2 besan chilla, 1 bowl curd, 1 banana", cal:664,p:40,c:71,f:24, dish:"Besan chilla"},
+    {slot:"Mid-Morning", items:"1 glass milk, 40g roasted chana, 1 banana, 3 boiled egg whites", cal:449,p:29,c:62,f:10, dish:null},
+    {slot:"Lunch", items:"1 cup rice, 1 roti, kadhi (1 cup), 80g air-fried paneer tikka, salad", cal:773,p:31,c:97,f:28, dish:"Kadhi"},
+    {slot:"Evening", items:"Crispy air-fried soya chunks (50g dry) chaat + 1 glass buttermilk + 1 pear", cal:317,p:29,c:48,f:2, dish:"Air fryer crispy soya chunks"},
+    {slot:"Dinner", items:"2 roti, 1.25 cup moong dal, lauki sabzi, 1 bowl curd", cal:700,p:29,c:99,f:19, dish:"Moong dal"} ]},
   { day:"Day 4", style:"Non-Veg", meals:[
-    {slot:"Breakfast", items:"3-egg masala omelette, 2 multigrain toast, 1 glass buttermilk", cal:580,p:34,c:45,f:26, dish:"Masala omelette"},
-    {slot:"Mid-Morning", items:"1 banana + handful roasted makhana", cal:260,p:6,c:42,f:8, dish:null},
-    {slot:"Lunch", items:"1.5 cup rice, 200g fish curry, 1 cup dal, salad, curd", cal:850,p:55,c:90,f:20, dish:"Fish curry"},
-    {slot:"Evening", items:"1 scoop whey + 1 pear", cal:300,p:27,c:32,f:3, dish:null},
-    {slot:"Dinner", items:"2 roti, 150g chicken keema with peas, salad, curd", cal:640,p:42,c:55,f:22, dish:"Chicken keema"} ]},
-  { day:"Day 5", style:"Veg", meals:[
-    {slot:"Breakfast", items:"Moong dal chilla (3) with paneer stuffing, 1 bowl curd", cal:590,p:36,c:50,f:22, dish:"Moong dal chilla"},
-    {slot:"Mid-Morning", items:"1 bowl sprouts + roasted peanuts (20g)", cal:280,p:15,c:25,f:12, dish:"Sprouts chaat"},
-    {slot:"Lunch", items:"1.5 cup rice, chole (1 cup), 150g paneer bhurji, salad, curd", cal:870,p:46,c:100,f:24, dish:"Chole"},
-    {slot:"Evening", items:"1 scoop whey + 1 orange", cal:300,p:27,c:30,f:3, dish:null},
-    {slot:"Dinner", items:"2 roti, dal makhani (light), bhindi sabzi, curd", cal:610,p:32,c:65,f:16, dish:"Dal makhani"} ]},
+    {slot:"Breakfast", items:"3-egg masala omelette (1 tsp oil), 3 multigrain toast, 1 glass buttermilk, 1 banana", cal:664,p:33,c:75,f:25, dish:"Masala omelette"},
+    {slot:"Mid-Morning", items:"150g hung curd + 1 banana + 20g roasted peanuts + 2 dates", cal:378,p:18,c:48,f:16, dish:null},
+    {slot:"Lunch", items:"1.5 cup rice, 120g air-fried fish, 1 cup dal, salad", cal:762,p:44,c:110,f:15, dish:"Air fryer fish fry"},
+    {slot:"Evening", items:"4 boiled egg whites + banana + sattu drink + 10 almonds", cal:363,p:25,c:49,f:8, dish:null},
+    {slot:"Dinner", items:"3 roti, chicken keema with peas (80g chicken), salad, 1 bowl curd", cal:732,p:45,c:85,f:22, dish:"Chicken keema"} ]},
+  { day:"Day 5", style:"Veg + Egg", meals:[
+    {slot:"Breakfast", items:"2 moong dal chilla stuffed with 50g paneer, 3 boiled egg whites, 1 bowl curd, 1 banana", cal:658,p:44,c:72,f:21, dish:"Moong dal chilla"},
+    {slot:"Mid-Morning", items:"1.5 cup sprouts chaat + 20g roasted peanuts + 1 apple", cal:388,p:20,c:58,f:12, dish:"Sprouts chaat"},
+    {slot:"Lunch", items:"1.5 cup rice, 1 cup chole, 80g paneer bhurji, salad", cal:870,p:36,c:123,f:26, dish:"Chole"},
+    {slot:"Evening", items:"Crispy air-fried soya chunks (50g dry) + 1 glass buttermilk + 1 orange + 2 dates", cal:319,p:30,c:46,f:2, dish:"Air fryer crispy soya chunks"},
+    {slot:"Dinner", items:"2 roti, dal makhani (light, 1 cup), bhindi sabzi, 1 bowl curd", cal:690,p:26,c:87,f:26, dish:"Dal makhani"} ]},
   { day:"Day 6", style:"Non-Veg", meals:[
-    {slot:"Breakfast", items:"4 egg whites + 2 whole eggs bhurji, 2 roti, curd", cal:610,p:42,c:42,f:26, dish:"Egg bhurji"},
-    {slot:"Mid-Morning", items:"1 banana + peanut butter (1.5 tbsp)", cal:290,p:8,c:32,f:13, dish:null},
-    {slot:"Lunch", items:"1.5 cup rice, 200g grilled chicken, dal, salad, curd", cal:870,p:60,c:85,f:22, dish:"Grilled chicken"},
-    {slot:"Evening", items:"1 scoop whey + roasted chana (20g)", cal:310,p:30,c:22,f:8, dish:null},
-    {slot:"Dinner", items:"2 roti, egg curry (3 eggs), palak sabzi, curd", cal:640,p:38,c:55,f:24, dish:"Egg curry"} ]},
-  { day:"Day 7", style:"Veg (light/cheat-friendly)", meals:[
-    {slot:"Breakfast", items:"Vegetable daliya (broken wheat) with curd, 6 almonds", cal:560,p:20,c:80,f:14, dish:"Vegetable daliya"},
-    {slot:"Mid-Morning", items:"1 bowl mixed fruit", cal:200,p:2,c:46,f:1, dish:null},
-    {slot:"Lunch", items:"1.5 cup rice, sambar, 150g paneer sabzi, salad, curd", cal:830,p:40,c:100,f:22, dish:"Sambar"},
-    {slot:"Evening", items:"1 scoop whey in milk", cal:340,p:32,c:28,f:8, dish:null},
-    {slot:"Dinner", items:"3 roti, mixed vegetable curry, 1 bowl curd", cal:600,p:22,c:85,f:15, dish:"Mixed vegetable curry"} ]}
+    {slot:"Breakfast", items:"2 whole eggs + 4 egg whites bhurji (1 tsp oil), 3 roti, 1 banana", cal:729,p:39,c:89,f:25, dish:"Egg bhurji"},
+    {slot:"Mid-Morning", items:"2 multigrain toast + 1 tbsp peanut butter + 1 banana", cal:360,p:12,c:58,f:10, dish:null},
+    {slot:"Lunch", items:"1.5 cup rice, 120g air-fried chicken breast, 1 cup dal, salad", cal:816,p:57,c:110,f:14, dish:"Air fryer chicken breast"},
+    {slot:"Evening", items:"4 boiled egg whites + 40g roasted chana + 1 apple", cal:311,p:24,c:49,f:2, dish:null},
+    {slot:"Dinner", items:"2 roti, egg curry (2 eggs), palak sabzi, 1 bowl curd", cal:646,p:30,c:62,f:31, dish:"Egg curry"} ]},
+  { day:"Day 7", style:"Veg + Egg", meals:[
+    {slot:"Breakfast", items:"Vegetable daliya (60g), 150g curd, 6 almonds, 4 boiled egg whites, 1 banana", cal:535,p:28,c:78,f:10, dish:"Vegetable daliya"},
+    {slot:"Mid-Morning", items:"Paneer sandwich (2 toast, 60g paneer, veggies) + 200ml milk", cal:435,p:24,c:39,f:20, dish:null},
+    {slot:"Lunch", items:"1.5 cup rice, 1 cup sambar, soya chunk curry (50g dry), 1 bowl curd, salad", cal:810,p:46,c:125,f:13, dish:"Sambar"},
+    {slot:"Evening", items:"200g hung curd + 3 dates + 20g roasted peanuts + 1 banana", cal:438,p:22,c:56,f:18, dish:null},
+    {slot:"Dinner", items:"3 roti, tofu & vegetable curry (150g tofu), 1 bowl curd", cal:705,p:39,c:75,f:30, dish:"Tofu curry"} ]}
 ];
 
 const GROCERY = [
-  { cat:"Protein", items:["Eggs — 3 dozen/week","Chicken breast — 1.2 kg","Fish (rohu/pomfret) — 400g","Paneer — 700g","Soya chunks — 250g","Curd/Dahi — 2 kg","Whey protein — as per dose","Buttermilk (chaas) — 1 L"] },
-  { cat:"Carbs", items:["Rice — 3 kg","Multigrain atta — 2 kg","Rolled oats — 500g","Broken wheat (daliya) — 500g","Bananas — 14","Sweet potato — 1 kg","Besan — 500g"] },
-  { cat:"Legumes", items:["Moong dal — 500g","Rajma — 500g","Chole/kabuli chana — 500g","Sprouts (moong/matki) — 500g","Dal makhani mix — 250g"] },
-  { cat:"Fats & Nuts", items:["Peanut butter — 1 jar","Almonds — 250g","Walnuts — 100g","Makhana — 200g","Cold-pressed groundnut/mustard oil — 500ml","Ghee — 250g"] },
-  { cat:"Veggies & Fruit", items:["Spinach, bhindi, lauki, mixed veg — assorted 3-4 kg","Cucumber & tomato for salad","Papaya, guava, orange, apple, pear — assorted"] },
-  { cat:"Gut-friendly extras", items:["Chia/flax seeds — 100g (soak, don't overdo)","Ajwain & jeera (for digestion)","Lemons — 6","Isabgol/psyllium husk — 1 pack (only if needed)"] }
+  { cat:"Protein (all from food)", items:["Eggs — 4 dozen/week (some meals use whites; 2 whites ≈ 1 whole egg)","Chicken breast, boneless — 600g","Fish fillet (rohu/basa) — 250g","Paneer — 400g","Tofu (firm) — 200g","Soya chunks — 250g","Curd/Dahi — 3 kg (part of it hung overnight for the hung-curd snacks)","Toned milk — 1.5 L","Sattu powder — 100g"] },
+  { cat:"Carbs", items:["Rice — 1 kg","Multigrain atta — 1.5 kg","Multigrain bread — 1 small loaf","Rolled oats — 250g","Broken wheat (daliya) — 250g","Bananas — 14","Dates — 12","Besan — 250g","Sweet potato — 1 kg (optional, for air-fried wedges)"] },
+  { cat:"Legumes", items:["Moong/toor dal — 500g","Rajma — 100g","Chole/kabuli chana — 100g","Roasted chana — 150g","Sprouts (moong/matki) — 400g","Whole urad (for dal makhani) — 100g"] },
+  { cat:"Fats & Nuts", items:["Peanuts — 150g","Peanut butter — 1 small jar","Almonds — 50g","Groundnut/mustard oil — 500ml","Ghee — 100g"] },
+  { cat:"Veggies & Fruit", items:["Spinach, bhindi, lauki, mixed veg — assorted 3-4 kg","Cucumber, tomato, onion for salads","Apples — 3, oranges — 3, pear — 1"] },
+  { cat:"Air fryer basics", items:["Ginger-garlic paste","Tandoori/tikka masala, chaat masala, garam masala","Kashmiri chilli powder, turmeric, cumin","Lemons — 8","Oil spray bottle or mister","Perforated parchment liners (optional)"] },
+  { cat:"Gut-friendly extras", items:["Ajwain & jeera (for digestion)","Chia/flax seeds — 100g (soak, don't overdo)","Isabgol/psyllium husk — 1 pack (only if needed)"] }
 ];
 
 /* ---------------- STATE ---------------- */
@@ -287,17 +309,31 @@ function loadLog(){
 }
 function saveLog(log){ localStorage.setItem("log:"+DATE, JSON.stringify(log)); }
 function loadHabitList(){
+  const defaults = ["7+ hours sleep", "No smoking", "No alcohol", "10 min prayer/reflection", "Post-workout stretch done"];
   try {
     const raw = localStorage.getItem("habit-list");
-    return raw ? JSON.parse(raw) : ["7+ hours sleep", "No smoking", "No alcohol", "Hit water goal", "10 min prayer/reflection", "Post-workout stretch done"];
-  } catch(e){ return ["7+ hours sleep", "No smoking", "No alcohol", "Hit water goal", "10 min prayer/reflection", "Post-workout stretch done"]; }
+    let list = raw ? JSON.parse(raw) : defaults;
+    if(localStorage.getItem("habit-water-removed") !== "1"){
+      list = list.filter(h => String(h).trim().toLowerCase() !== "hit water goal");
+      localStorage.setItem("habit-list", JSON.stringify(list));
+      localStorage.setItem("habit-water-removed", "1");
+    }
+    return list;
+  } catch(e){ return defaults; }
 }
 function saveHabitList(list){ localStorage.setItem("habit-list", JSON.stringify(list)); }
 function loadSupplementList(){
+  const defaults = ["Creatine", "Fish Oil", "ZMA (Magnesium)"];
   try {
     const raw = localStorage.getItem("supplement-list");
-    return raw ? JSON.parse(raw) : ["Creatine", "Protein", "Fish Oil", "ZMA (Magnesium)"];
-  } catch(e){ return ["Creatine", "Protein", "Fish Oil", "ZMA (Magnesium)"]; }
+    let list = raw ? JSON.parse(raw) : defaults;
+    if(localStorage.getItem("supp-protein-removed") !== "1"){
+      list = list.filter(x => String(x).trim().toLowerCase() !== "protein");
+      localStorage.setItem("supplement-list", JSON.stringify(list));
+      localStorage.setItem("supp-protein-removed", "1");
+    }
+    return list;
+  } catch(e){ return defaults; }
 }
 function saveSupplementList(list){ localStorage.setItem("supplement-list", JSON.stringify(list)); }
 function getSupplementStreak(){
@@ -550,7 +586,7 @@ function anyPREverHit(){
   return allExerciseNames().some(name => getExerciseHistory(name).length >= 2);
 }
 function weeklySummary(){
-  let totalVolume=0, waterDaysHit=0, sleepSum=0, sleepDays=0, habitsSum=0, habitsDaysCounted=0, daysActive=0;
+  let totalVolume=0, sleepSum=0, sleepDays=0, habitsSum=0, habitsDaysCounted=0, daysActive=0;
   const habitList = loadHabitList();
   for(let i=0;i<7;i++){
     const d = new Date(); d.setDate(d.getDate()-i);
@@ -561,10 +597,6 @@ function weeklySummary(){
       if(raw){
         const data = JSON.parse(raw);
         if(data.workout && Object.values(data.workout).some(v=>v)) daysActive++;
-        const dayWorkout = WORKOUT_DAYS.find(w=>w.day===["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][dow]);
-        const bw = getLatestBodyweight();
-        const target = Math.round((bw*35 + (dayWorkout && dayWorkout.exercises.length>0 ? 750:0))/50)*50;
-        if((data.water||0) >= target) waterDaysHit++;
         if(data.habits && habitList.length>0){
           habitsSum += Object.values(data.habits).filter(Boolean).length / habitList.length;
           habitsDaysCounted++;
@@ -581,7 +613,6 @@ function weeklySummary(){
   }
   return {
     totalVolume: Math.round(totalVolume),
-    waterDaysHit,
     avgSleep: sleepDays>0 ? (sleepSum/sleepDays).toFixed(1) : null,
     avgHabitPct: habitsDaysCounted>0 ? Math.round((habitsSum/habitsDaysCounted)*100) : null,
     daysActive,
@@ -679,13 +710,6 @@ function allExerciseNames(){
   WORKOUT_DAYS.forEach(d=>d.exercises.forEach(ex=>set.add(ex.name)));
   return [...set];
 }
-function waterTargetMl(){
-  // Baseline ~35ml/kg bodyweight, plus ~750ml extra on lifting days for sweat loss.
-  const bw = getLatestBodyweight();
-  const baseline = bw * 35;
-  const isTrainingDay = todaysWorkout.exercises.length > 0;
-  return Math.round((baseline + (isTrainingDay ? 750 : 0)) / 50) * 50; // round to nearest 50ml
-}
 function loadWeightHistory(){
   try { const raw = localStorage.getItem("weight-history"); return raw ? JSON.parse(raw) : []; }
   catch(e){ return []; }
@@ -724,94 +748,9 @@ let photoHistory = loadPhotoHistory();
 let injuryLog = loadInjuryLog();
 let currentTab = "today";
 let selectedStrengthExercise = null;
-let waterRemindersOn = localStorage.getItem("water-reminders-on") === "true";
-let waterReminderInterval = null;
-
-function startWaterReminders(){
-  if(waterReminderInterval) clearInterval(waterReminderInterval);
-  waterReminderInterval = setInterval(()=>{
-    const hour = new Date().getHours();
-    if(hour < 7 || hour > 22) return; // don't nag outside waking hours while app happens to be open
-    const litersSoFar = (log.water/1000).toFixed(2);
-    const targetL = (waterTargetMl()/1000).toFixed(1);
-    if(Notification.permission === "granted"){
-      new Notification("💧 Water check-in", {
-        body: `You're at ${litersSoFar}L of your ${targetL}L target today.`,
-        icon: "icons/icon-192.png"
-      });
-    }
-    speak(`Water check-in. You've had ${litersSoFar} liters so far, out of your ${targetL} liter target.`);
-  }, 90*60*1000); // every 90 minutes while app stays open
-}
-function stopWaterReminders(){
-  if(waterReminderInterval){ clearInterval(waterReminderInterval); waterReminderInterval = null; }
-}
-if(waterRemindersOn && "Notification" in window && Notification.permission === "granted"){
-  startWaterReminders();
-}
 
 // Verified real YouTube video IDs — filled in progressively.
 // If an exercise/dish isn't in here yet, we fall back to a live search link.
-const VIDEO_IDS = {
-  "Barbell Bench Press": "Pp8rHcFVIYg",
-  "Incline Dumbbell Press": "VDU5bzE2qOE",
-  "Chest Dip / Machine Dip": "yN6Q1UI_xkE",
-  "Machine Chest Press": "pLofEAcfsO8",
-  "Cable Fly": "ovFc-5YdcXw",
-  "Skull Crushers (EZ Bar)": "GaK2da6B2zM",
-  "Overhead Rope Triceps Ext.": "GzmlxvSFE7A",
-  "Triceps Pushdown": "w_viR9hVi4A",
-  "Rope Triceps Pushdown": "w_viR9hVi4A",
-  "Deadlift": "ntr64W6ZWB0",
-  "Lat Pulldown / Pull-up": "Z_3xHwuO8Tk",
-  "Lat Pulldown": "Z_3xHwuO8Tk",
-  "Barbell Row": "rqTOAM8WoeM",
-  "Seated Cable Row": "EU7bOadUsNI",
-  "Straight Arm Pulldown": "eKJUJ2eFPUY",
-  "Barbell Curl": "KCH2RlxbIbo",
-  "Hammer Curl": "BRVDS6HVR9Q",
-  "Barbell Shrugs": "KbsQ1E8Hg0o",
-  "Back Squat": "8PMjqgR8Wa8",
-  "Leg Press": "cDGOn-yfKJA",
-  "Walking Lunges": "2MbSPOB24XQ",
-  "Leg Extension": "MXvSzXEBOTI",
-  "Seated Leg Curl": "t9sTSr-JYSs",
-  "Hanging Leg Raise": "-LHetdLNhjI",
-  "Russian Twist": "jjyR6Z1U4dA",
-  "Plank": "HaH4JvdBCfE",
-  "Incline Barbell Press": "O9x7xRhtA9Q",
-  "Seated DB Shoulder Press": "fuQpuu--bMI",
-  "Chest-Supported Row": "XLoIFFXjFyY",
-  "Cable Lateral Raise": "zpbm-xRHB6k",
-  "Cable Lateral Raise (wide)": "zpbm-xRHB6k",
-  "Rear Delt Fly": "p7YER_nABrI",
-  "EZ Bar Curl": "5NsFLGUf0Fo",
-  "Romanian Deadlift": "KN5vN3JskqI",
-  "Lying Leg Curl": "3gZm9wGTsEo",
-  "Hip Thrust": "S_uZP4UH6J0",
-  "Standing Calf Raise": "ndQc4mz4mBU",
-  "Seated Calf Raise": "I1uQtobaNRQ",
-  "Cable Curl": "5jxkRHU4spk",
-  "Close Grip Bench Press": "UYJsFzqdgK4",
-  "Overhead Triceps Extension": "GzmlxvSFE7A",
-  "Diamond Push-ups": "kGhDnFwMY3E",
-  "Face Pulls": "eQaSpG7aMYQ",
-  "Multi-Stance Squat (Sumo/Narrow)": "5Ulb4GymFX0",
-  "Wrist Curl": "SqwIBiru46w",
-  "Front Raise": "qmFQTDYwpsg",
-  "Crunches": "gEMYUHv8xZg",
-  "Overhead Press": "bMksDb5a3P0",
-  "Single Arm Row": "tLnlWj7LQ34",
-  "Incline Dumbbell Curl": "Q1hoWbxeFLs",
-  "Pushups": "I9fsqKE5XHo",
-  "Leg Curl": "3gZm9wGTsEo",
-  "Chest Press Machine": "pLofEAcfsO8",
-  "Rope Pushdown": "w_viR9hVi4A",
-  "Overhead DB Extension": "GzmlxvSFE7A",
-  "Lateral Raises": "zpbm-xRHB6k",
-  "Incline Machine Press": "O9x7xRhtA9Q",
-  "Pull-ups": "Z_3xHwuO8Tk",
-};
 const RECIPE_VIDEO_IDS = {
   "Egg bhurji": "1OdPf65aPJg",
   "Besan chilla": "35xrnRaa1x4",
@@ -836,11 +775,23 @@ const RECIPE_VIDEO_IDS = {
   "Sambar": "ji4bkE5qwI8",
   "Grilled chicken": "EjjKRqQYQPw",
   "Egg curry": "j1z9MWqmkIs",
+  "Air fryer chicken tikka": "0plYffjo39U",
+  "Air fryer paneer tikka": "IlY5N8YlDZU",
+  "Air fryer crispy soya chunks": "IxTOPBP7lPU",
+  "Air fryer fish fry": "QEKn1nXP9ow",
+  "Air fryer chicken breast": "g1jyxl-XUNM",
+  "Air fryer tandoori chicken": "g8ALextKRZA",
+  "Tofu curry": "dNyl_KrMiaA",
+  "Air fryer hariyali chicken tikka": "_rlPiQysisg",
+  "Air fryer chicken 65": "vArhGB-qjoI",
+  "Air fryer fish tikka": "STEa2chabbM",
+  "Air fryer soya chaap tikka": "_BlNDcaUKWs",
+  "Air fryer sprouts tikki": "rBznLUlAzso",
 };
 
 function slugify(s){ return s.replace(/[^a-zA-Z0-9]/g,""); }
 
-function toggleVideo(uid, name, isMeal){
+function toggleVideo(uid, name){
   const box = document.getElementById("vidbox-"+uid);
   if(!box) return;
   if(box.style.display === "block"){
@@ -848,32 +799,37 @@ function toggleVideo(uid, name, isMeal){
     box.innerHTML = "";
     return;
   }
-  const map = isMeal ? RECIPE_VIDEO_IDS : VIDEO_IDS;
-  const id = map[name];
-  const fallbackUrl = ytLink(name + (isMeal ? " recipe" : " proper form tutorial"));
-  if(id){
-    box.innerHTML = "";
-    const frame = document.createElement("div");
-    frame.className = "video-frame";
-    const iframe = document.createElement("iframe");
-    iframe.src = "https://www.youtube.com/embed/" + id;
-    iframe.title = name;
-    iframe.setAttribute("frameborder", "0");
-    iframe.setAttribute("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture");
-    iframe.allowFullscreen = true;
-    frame.appendChild(iframe);
-    box.appendChild(frame);
-    const link = document.createElement("a");
-    link.href = fallbackUrl;
-    link.target = "_blank";
-    link.rel = "noopener";
-    link.className = "video-fallback-link";
-    link.textContent = "Video not loading? Search instead →";
-    box.appendChild(link);
-  } else {
-    window.open(fallbackUrl, "_blank");
-    return;
-  }
+  const id = RECIPE_VIDEO_IDS[name];
+  if(!id) return;
+  box.innerHTML = "";
+  const frame = document.createElement("div");
+  frame.className = "video-frame";
+  const iframe = document.createElement("iframe");
+  iframe.src = "https://www.youtube.com/embed/" + id + "?rel=0&playsinline=1";
+  iframe.title = name;
+  iframe.setAttribute("frameborder", "0");
+  iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+  iframe.setAttribute("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen");
+  iframe.allowFullscreen = true;
+  frame.appendChild(iframe);
+  box.appendChild(frame);
+  const row = document.createElement("div");
+  row.className = "video-btn-row";
+  const openBtn = document.createElement("a");
+  openBtn.href = "https://www.youtube.com/watch?v=" + id;
+  openBtn.target = "_blank";
+  openBtn.rel = "noopener";
+  openBtn.className = "video-open-btn";
+  openBtn.textContent = "Not playing? Open in YouTube ↗";
+  const searchBtn = document.createElement("a");
+  searchBtn.href = ytLink(name + " recipe");
+  searchBtn.target = "_blank";
+  searchBtn.rel = "noopener";
+  searchBtn.className = "video-open-btn secondary";
+  searchBtn.textContent = "Find another video";
+  row.appendChild(openBtn);
+  row.appendChild(searchBtn);
+  box.appendChild(row);
   box.style.display = "block";
 }
 
@@ -895,7 +851,7 @@ function consumedToday(){
 }
 
 /* ---------------- RENDER ---------------- */
-const TABS = [["today","Today"],["insights","Insights"],["workout","Workout"],["meals","Meals"],["grocery","Grocery"],["recovery","Recovery"],["progress","Progress"]];
+const TABS = [["today","Today"],["insights","Insights"],["workout","Workout"],["meals","Meals"],["airfryer","Air Fryer"],["grocery","Grocery"],["recovery","Recovery"],["progress","Progress"]];
 
 function renderTabs(){
   const el = document.getElementById("tabs");
@@ -903,54 +859,157 @@ function renderTabs(){
     `<button class="tab-btn ${currentTab===key?'active':''}" data-tab="${key}">${label}</button>`
   ).join("");
   el.querySelectorAll(".tab-btn").forEach(btn=>{
-    btn.addEventListener("click", ()=>{ currentTab = btn.dataset.tab; render(); });
+    btn.addEventListener("click", ()=>{ currentTab = btn.dataset.tab; animateNext = true; render(); });
   });
 }
 
+let animateNext = true;
+let lastConfetti = 0;
+
 function ring(label, value, target, color, unit){
-  const pct = target ? Math.min(Math.round((value/target)*100),100) : 0;
+  const pct = target ? Math.min(value/target, 1) : 0;
+  const r = 34, circ = 2*Math.PI*r, off = circ*(1-pct);
   return `<div class="ring-wrap">
-    <div class="ring" style="background:conic-gradient(${color} ${pct*3.6}deg, #212D3D ${pct*3.6}deg)">
-      <div class="ring-inner">
-        <span class="ring-val">${value}</span>
-        <span class="ring-target">/${target}${unit}</span>
-      </div>
+    <div class="ring-svg">
+      <svg viewBox="0 0 80 80" width="80" height="80" style="transform:rotate(-90deg)">
+        <circle cx="40" cy="40" r="${r}" fill="none" stroke="#212D3D" stroke-width="8"/>
+        <circle cx="40" cy="40" r="${r}" fill="none" stroke="${color}" stroke-width="8" stroke-linecap="round"
+          stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"
+          class="${animateNext ? 'ring-anim' : ''}" style="--circ:${circ.toFixed(1)};--off:${off.toFixed(1)};filter:drop-shadow(0 0 4px ${color}99)"/>
+      </svg>
+      <div class="ring-center"><span class="ring-val">${value}</span><span class="ring-target">/${target}${unit}</span></div>
     </div>
-    <span class="ring-label">${label}</span>
+    <span class="ring-label" style="color:${color}">${label}</span>
   </div>`;
+}
+
+const SLOT_STYLE = {
+  "Breakfast":   { c:"#FFB347", i:"🌅" },
+  "Mid-Morning": { c:"#4ADE80", i:"🍌" },
+  "Lunch":       { c:"#38BDF8", i:"🍛" },
+  "Evening":     { c:"#A78BFA", i:"🍎" },
+  "Dinner":      { c:"#F472B6", i:"🌙" }
+};
+
+function dailyScore(){
+  const comps = [];
+  const mealsDone = todaysMeals.meals.filter(m=>log.meals[m.slot]).length;
+  comps.push({ label:"Meals", color:"#FF8A3D", pct: mealsDone/todaysMeals.meals.length });
+  if(todaysWorkout.exercises.length>0){
+    const done = todaysWorkout.exercises.filter(e=>log.workout[e.name]).length;
+    comps.push({ label:"Workout", color:"#F472B6", pct: done/todaysWorkout.exercises.length });
+  }
+  const hl = loadHabitList();
+  if(hl.length) comps.push({ label:"Habits", color:"#4ADE80", pct: hl.filter(h=>log.habits[h]).length/hl.length });
+  const sl = loadSupplementList();
+  if(sl.length) comps.push({ label:"Supps", color:"#A78BFA", pct: sl.filter(x=>log.supplements[x]).length/sl.length });
+  const total = comps.reduce((a,c)=>a+c.pct,0)/comps.length;
+  return { comps, pct: Math.round(total*100) };
+}
+
+function renderScoreCard(){
+  const sc = dailyScore();
+  const r = 54, circ = 2*Math.PI*r, off = circ*(1-sc.pct/100);
+  const perfect = sc.pct >= 100;
+  const g1 = perfect ? "#4ADE80" : "#C2703D";
+  const g2 = perfect ? "#38BDF8" : "#FFB347";
+  const msg = perfect ? "Perfect day" : sc.pct>=70 ? "Strong day" : sc.pct>=40 ? "Keep going" : "Let's start";
+  let rows = "";
+  sc.comps.forEach(c=>{
+    const p = Math.round(c.pct*100);
+    rows += `<div class="score-row"><span class="lbl">${c.label}</span><span class="bar"><i style="width:${p}%;background:${c.color};box-shadow:0 0 6px ${c.color}88"></i></span><span class="val">${p}%</span></div>`;
+  });
+  return `<div class="score-card">
+    <div class="score-ring-wrap">
+      <svg viewBox="0 0 128 128" width="128" height="128" style="transform:rotate(-90deg)">
+        <defs><linearGradient id="scoreGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${g1}"/><stop offset="100%" stop-color="${g2}"/></linearGradient></defs>
+        <circle cx="64" cy="64" r="${r}" fill="none" stroke="#212D3D" stroke-width="12"/>
+        <circle cx="64" cy="64" r="${r}" fill="none" stroke="url(#scoreGrad)" stroke-width="12" stroke-linecap="round"
+          stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"
+          class="${animateNext ? 'ring-anim' : ''}" style="--circ:${circ.toFixed(1)};--off:${off.toFixed(1)};filter:drop-shadow(0 0 6px ${g2}88)"/>
+      </svg>
+      <div class="score-center"><span class="score-pct">${sc.pct}%</span><span class="score-sub">${msg}</span></div>
+    </div>
+    <div class="score-list">${rows}</div>
+  </div>`;
+}
+
+function showToast(msg){
+  let t = document.getElementById("celebrateToast");
+  if(!t){ t = document.createElement("div"); t.id = "celebrateToast"; t.className = "celebrate-toast"; document.body.appendChild(t); }
+  t.textContent = msg;
+  t.classList.remove("show"); void t.offsetWidth; t.classList.add("show");
+  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove("show"), 2800);
+}
+function confettiBurst(){
+  const now = Date.now();
+  if(now - lastConfetti < 1800) return;
+  lastConfetti = now;
+  const cv = document.createElement("canvas");
+  cv.style.cssText = "position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:3000;";
+  const W = cv.width = window.innerWidth, H = cv.height = window.innerHeight;
+  document.body.appendChild(cv);
+  const ctx = cv.getContext("2d");
+  const colors = ["#FF8A3D","#4ADE80","#38BDF8","#F472B6","#A78BFA","#FFD166","#C2703D"];
+  const parts = Array.from({length:140}, ()=>({
+    x: W/2 + (Math.random()-.5)*W*0.3, y: H*0.35,
+    vx: (Math.random()-.5)*12, vy: -(Math.random()*11+4),
+    g: 0.28 + Math.random()*0.12, s: 5 + Math.random()*6,
+    r: Math.random()*6.28, vr: (Math.random()-.5)*.4,
+    c: colors[(Math.random()*colors.length)|0]
+  }));
+  let frames = 0;
+  (function tick(){
+    ctx.clearRect(0,0,W,H);
+    parts.forEach(p=>{
+      p.vy += p.g; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.vx *= 0.99;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r);
+      ctx.fillStyle = p.c; ctx.globalAlpha = Math.max(0, 1 - frames/110);
+      ctx.fillRect(-p.s/2, -p.s/3, p.s, p.s*0.6); ctx.restore();
+    });
+    frames++;
+    if(frames < 115) requestAnimationFrame(tick); else cv.remove();
+  })();
+}
+function celebrate(msg){
+  showToast(msg);
+  if(navigator.vibrate) navigator.vibrate([70,40,70,40,120]);
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  confettiBurst();
+}
+function checkCelebrations(){
+  if(!log.celebrated) log.celebrated = {};
+  const msgs = [];
+  const flag = (k, msg, cond)=>{ if(cond && !log.celebrated[k]){ log.celebrated[k] = true; msgs.push(msg); } };
+  flag("meals", "🍽️ All meals done!", todaysMeals.meals.every(m=>log.meals[m.slot]));
+  flag("workout", "💪 Workout complete!", todaysWorkout.exercises.length>0 && todaysWorkout.exercises.every(e=>log.workout[e.name]));
+  const hl = loadHabitList();
+  flag("habits", "✅ Every habit done!", hl.length>0 && hl.every(h=>log.habits[h]));
+  const sl = loadSupplementList();
+  flag("supps", "💊 Supplements done!", sl.length>0 && sl.every(x=>log.supplements[x]));
+  flag("perfect", "🏆 Perfect day — 100%!", dailyScore().pct >= 100);
+  if(msgs.length){ saveLog(log); celebrate(msgs[msgs.length-1]); }
+}
+function postRender(){
+  animateNext = false;
+  checkCelebrations();
 }
 
 function renderToday(){
   const consumed = consumedToday();
   const weekKey = "w"+log.week;
-  const waterTarget = waterTargetMl();
   let html = "";
   if(deloadDue()){
     html += `<div class="deload-banner">⚡ You're about ${weeksSinceStart()} weeks into training — this is a good week for a deload. Drop weights 10-20%, keep reps up, and let your joints and CNS actually recover before pushing hard again.</div>`;
   }
+  html += renderScoreCard();
   html += `<div class="rings-card">
-    ${ring("Cal",consumed.cal,TARGETS.calories,"#C2703D","")}
-    ${ring("Protein",consumed.p,TARGETS.protein,"#7A9E85","g")}
-    ${ring("Carbs",consumed.c,TARGETS.carbs,"#3D6B54","g")}
-    ${ring("Fat",consumed.f,TARGETS.fat,"#A66B45","g")}
+    ${ring("Cal",consumed.cal,TARGETS.calories,"#FF8A3D","")}
+    ${ring("Protein",consumed.p,TARGETS.protein,"#4ADE80","g")}
+    ${ring("Carbs",consumed.c,TARGETS.carbs,"#38BDF8","g")}
+    ${ring("Fat",consumed.f,TARGETS.fat,"#F472B6","g")}
   </div>
-  <div class="water-card">
-    <div class="section-label" style="margin:0 0 4px;">💧 Water Intake</div>
-    <div style="display:flex;justify-content:space-between;align-items:baseline;">
-      <span style="font-family:'JetBrains Mono',monospace;font-size:18px;color:#4A8FC2;">${(log.water/1000).toFixed(2)}L</span>
-      <span style="font-size:12px;color:#8B96A3;">of ${(waterTarget/1000).toFixed(1)}L target</span>
-    </div>
-    <div class="water-bar-bg"><div class="water-bar-fill" style="width:${Math.min(100, Math.round(log.water/waterTarget*100))}%"></div></div>
-    <div class="water-btn-row">
-      <button class="water-btn" data-water-add="250">+250ml<br><span style="font-size:10px;font-weight:400;">glass</span></button>
-      <button class="water-btn" data-water-add="500">+500ml<br><span style="font-size:10px;font-weight:400;">bottle</span></button>
-      <button class="water-btn" data-water-add="750">+750ml<br><span style="font-size:10px;font-weight:400;">big bottle</span></button>
-    </div>
-    <button class="water-reset" id="waterResetBtn">Reset today's water</button>
-    <button class="reminder-btn" id="reminderToggleBtn">${waterRemindersOn ? "🔕 Turn off water reminders" : "🔔 Turn on water reminders"}</button>
-    <div class="small-note" style="margin-top:8px;">Honest note: reminders only fire while this app is open on your screen or running in a background tab — phones don't allow a simple app like this to send notifications once it's fully closed (that needs a paid server-based push service). Treat this as a nudge while you're using your phone, and maybe set one phone alarm as backup for full-day coverage.</div>
-  </div>
-  <div class="water-card">
+  <div class="panel-card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
       <div class="section-label" style="margin:0;">✅ Daily Habits</div>
       <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#7A9E85;">${getHabitStreak()}🔥</span>
@@ -969,7 +1028,7 @@ function renderToday(){
       <button class="save-ex-btn" id="addHabitBtn">Add</button>
     </div>
   </div>
-  <div class="water-card">
+  <div class="panel-card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
       <div class="section-label" style="margin:0;">💊 Supplements</div>
       <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#7A9E85;">${getSupplementStreak()}🔥</span>
@@ -992,11 +1051,12 @@ function renderToday(){
   todaysMeals.meals.forEach(m=>{
     const checked = !!log.meals[m.slot];
     const uid = "today-meal-"+slugify(m.slot);
-    const videoLinkHtml = m.dish ? `<a class="video-link" href="javascript:void(0)" onclick="event.stopPropagation();event.preventDefault();toggleVideo('${uid}','${m.dish.replace(/'/g,"\\'")}',true)">▶ Watch recipe</a>
+    const videoLinkHtml = (m.dish && RECIPE_VIDEO_IDS[m.dish]) ? `<a class="video-link" href="javascript:void(0)" onclick="event.stopPropagation();event.preventDefault();toggleVideo('${uid}','${m.dish}')">▶ Watch recipe</a>
         <div id="vidbox-${uid}" style="display:none"></div>` : "";
-    html += `<label class="item-row ${checked?'checked-meal':''}" data-meal="${m.slot}">
+    const ss = SLOT_STYLE[m.slot] || { c:"#7A9E85", i:"" };
+    html += `<label class="item-row ${checked?'checked-meal':''}" data-meal="${m.slot}" style="border-left:4px solid ${ss.c};${checked?`background:${ss.c}1F;`:''}">
       <input type="checkbox" ${checked?'checked':''} data-meal-cb="${m.slot}" />
-      <div style="flex:1"><div class="item-title">${m.slot}</div><div class="item-sub">${m.items}</div>
+      <div style="flex:1"><div class="item-title" style="color:${ss.c};">${ss.i} ${m.slot}</div><div class="item-sub">${m.items}</div>
         ${videoLinkHtml}
       </div>
       <div class="item-macro">${m.cal}kcal<br>${m.p}P</div>
@@ -1026,12 +1086,10 @@ function renderToday(){
       const loggedSetsHtml = detail.sets.map((s,i)=>
         `<div class="logged-set-row">Set ${i+1}: <b>${s.weight}kg × ${s.reps}</b> <button class="del-set-btn" data-del-set="${ex.name}" data-del-idx="${i}">✕</button></div>`
       ).join("");
-      html += `<div class="item-row ex ${checked?'checked-ex':''}" style="flex-direction:column;align-items:stretch;">
+      html += `<div class="item-row ex ${checked?'checked-ex':''}" style="flex-direction:column;align-items:stretch;border-left:4px solid ${todaysWorkout.color};${checked?`background:${todaysWorkout.color}1F;`:''}">
         <div style="display:flex;align-items:center;gap:12px;">
           <input type="checkbox" ${checked?'checked':''} data-ex-cb="${ex.name}" />
           <div style="flex:1"><div class="item-title">${ex.name}${pr?' <span class="pr-badge">🏆 PR</span>':''}</div>
-            <a class="video-link" href="javascript:void(0)" onclick="event.stopPropagation();event.preventDefault();toggleVideo('${uid}','${ex.name.replace(/'/g,"\\'")}',false)">▶ Watch form</a>
-            <div id="vidbox-${uid}" style="display:none"></div>
           </div>
           <div class="ex-load">${ex[weekKey]}</div>
         </div>
@@ -1067,8 +1125,6 @@ function renderWorkout(){
         const uid = "wk-"+slugify(d.day)+"-"+slugify(ex.name);
         html += `<div class="ex-line" style="flex-direction:column;align-items:flex-start;gap:2px;">
           <div style="display:flex;justify-content:space-between;width:100%;"><span>${ex.name}</span><span class="ex-load">${ex[weekKey]}</span></div>
-          <a class="video-link" href="javascript:void(0)" onclick="toggleVideo('${uid}','${ex.name.replace(/'/g,"\\'")}',false)">▶ Watch form</a>
-          <div id="vidbox-${uid}" style="display:none;width:100%;"></div>
         </div>`;
       });
       html += `</div>`;
@@ -1091,10 +1147,10 @@ function renderMeals(){
       <div class="day-body">`;
     d.meals.forEach(m=>{
       const uid = "meal-"+slugify(d.day)+"-"+slugify(m.slot);
-      const videoLinkHtml = m.dish ? `<a class="video-link" href="javascript:void(0)" onclick="toggleVideo('${uid}','${m.dish.replace(/'/g,"\\'")}',true)">▶ Watch recipe</a>
+      const videoLinkHtml = (m.dish && RECIPE_VIDEO_IDS[m.dish]) ? `<a class="video-link" href="javascript:void(0)" onclick="toggleVideo('${uid}','${m.dish}')">▶ Watch recipe</a>
         <div id="vidbox-${uid}" style="display:none;"></div>` : "";
       html += `<div class="meal-slot">
-        <div class="meal-slot-name">${m.slot}</div>
+        <div class="meal-slot-name" style="color:${(SLOT_STYLE[m.slot]||{}).c||'#7A9E85'}">${(SLOT_STYLE[m.slot]||{}).i||''} ${m.slot}</div>
         <div class="meal-slot-items">${m.items}</div>
         <div class="meal-slot-macro">${m.cal}kcal · P${m.p} C${m.c} F${m.f}</div>
         ${videoLinkHtml}
@@ -1102,7 +1158,7 @@ function renderMeals(){
     });
     html += `</div></div>`;
   });
-  html += `<div class="note-block">This 7-day cycle repeats every week for all 6 months. Every 4 weeks, once your weight is trending up, add 100–150 kcal (extra roti, rice, or a banana) to keep building muscle. For gut comfort: 1 bowl curd/buttermilk daily, chew slowly, keep fried food to twice a week max, and drink 3.5–4L water daily to prevent constipation and fissures from higher protein intake.</div>`;
+  html += `<div class="note-block">All protein now comes from food — no powders. Daily protein lands around 155–165g, and every number here is an estimate (real portions and brands vary by roughly ±10%). This 7-day cycle repeats every week. Egg swap: 2 egg whites ≈ 1 whole egg in protein, so if you'd rather not waste yolks, swap them (adds ~5g fat per egg). Every 4 weeks, if your weight isn't trending up, add 100–150 kcal (an extra roti, rice, or banana). For gut comfort: 1 bowl curd/buttermilk daily, chew slowly, and drink 3.5–4L water daily to prevent constipation and fissures on a higher-protein diet.</div>`;
   return html;
 }
 
@@ -1112,6 +1168,95 @@ function renderGrocery(){
     html += `<div class="grocery-card"><div class="grocery-cat">${g.cat}</div>`;
     g.items.forEach(it=>{ html += `<div class="grocery-item">• ${it}</div>`; });
     html += `</div>`;
+  });
+  return html;
+}
+
+let afFilter = "All";
+const AF_CATS = ["All", "Chicken", "Fish & Eggs", "Veg & Soya", "Snacks & Sides"];
+const AIR_FRYER = [
+  { cat:"Chicken", name:"Chicken tikka", protein:"~32g protein per 100g chicken", temp:"190–200°C", time:"10–14 min", dish:"Air fryer chicken tikka",
+    steps:"Marinate cubed chicken breast in hung curd, ginger-garlic paste, lemon and tikka masala (30 min to overnight). Preheat 3–5 min, arrange in a single layer, light oil spray, turn halfway.",
+    note:"Chicken is done when the inside reaches 74°C and no pink remains — breast dries out fast, so don't overshoot." },
+  { cat:"Chicken", name:"Hariyali (green) chicken tikka", protein:"~32g protein per 100g chicken", temp:"190–200°C", time:"12–14 min", dish:"Air fryer hariyali chicken tikka",
+    steps:"Blend mint, coriander, green chilli, ginger-garlic and lemon with hung curd. Marinate cubed chicken breast for at least 30 min (overnight is better). Single layer, light oil spray, turn halfway." },
+  { cat:"Chicken", name:"Chicken malai tikka (lighter)", protein:"~30g protein per 100g chicken", temp:"180–190°C", time:"12–15 min", dish:null,
+    steps:"Marinate chicken in thick hung curd, ginger-garlic, white pepper, cardamom and a spoon of cashew paste. Single layer, turn once — it should come out pale golden with light spotting, not dark char.",
+    note:"Skip the heavy cream to keep the fat down." },
+  { cat:"Chicken", name:"Tandoori chicken legs", protein:"~25–30g protein per 2 skinless drumsticks", temp:"190°C", time:"20–25 min", dish:"Air fryer tandoori chicken",
+    steps:"Score the legs, marinate in curd and tandoori spices for 2+ hours (overnight is better), cook turning halfway. Juices should run clear.",
+    note:"Remove the skin to keep the fat down." },
+  { cat:"Chicken", name:"Chicken 65 (dry)", protein:"~28g protein per 100g chicken", temp:"200°C", time:"10–12 min", dish:"Air fryer chicken 65",
+    steps:"Marinate chicken pieces in ginger-garlic, chilli, curd, a spoon of cornflour and spices for 30 min. Air fry in a single layer, shaking halfway, then toss with curry leaves and green chilli lightly sautéed in 1 tsp oil.",
+    note:"Keep the cornflour light — it stays crisp without adding much." },
+  { cat:"Chicken", name:"Chicken keema kebabs", protein:"~25g protein per 100g", temp:"190°C", time:"12–15 min", dish:null,
+    steps:"Mix minced chicken with ginger-garlic, spices and chopped coriander, shape into seekh/patties, light oil, turn halfway." },
+  { cat:"Chicken", name:"Whole roast chicken", protein:"~25g protein per 100g meat (skin off)", temp:"180°C", time:"40–50 min (about 1 kg bird)", dish:null,
+    steps:"Only if the whole bird fits in your basket with room around it. Marinate overnight, pat dry, start breast-side down and flip halfway.",
+    note:"Check 74°C in the thickest part of the thigh before eating and rest it 10 minutes. Pull the skin off to keep the fat down." },
+
+  { cat:"Fish & Eggs", name:"Masala fish fry", protein:"~30g protein per 150g fillet", temp:"200°C", time:"10–12 min", dish:"Air fryer fish fry",
+    steps:"Marinate fillets in lemon, ginger-garlic, chilli and turmeric for 20 min. Pat dry, light oil, flip once gently." },
+  { cat:"Fish & Eggs", name:"Ajwain fish tikka", protein:"~30g protein per 150g fillet", temp:"200°C", time:"8–10 min", dish:"Air fryer fish tikka",
+    steps:"Cube firm fish (basa, rohu or surmai). Marinate in hung curd, ajwain, lemon, ginger-garlic and a teaspoon of besan for 20 min. Single layer, flip once gently." },
+  { cat:"Fish & Eggs", name:"Prawn tikka (optional)", protein:"~20–24g protein per 100g prawns", temp:"200°C", time:"6–8 min", dish:null,
+    steps:"Marinate cleaned prawns in hung curd, chilli, turmeric and lemon for 15 min. Single layer — pull them as soon as they curl and turn pink.",
+    note:"They turn rubbery quickly, so start checking at 5 minutes." },
+  { cat:"Fish & Eggs", name:"Air-fried boiled eggs", protein:"~6g protein per egg", temp:"130–150°C", time:"12–15 min", dish:null,
+    steps:"Place whole eggs in the basket (no oil, no water), then straight into ice water. About 12 min gives jammy yolks, 15 min fully hard.",
+    note:"Eggs can crack on the first try — keep a gap between them." },
+  { cat:"Fish & Eggs", name:"Masala egg cups", protein:"~12–15g protein for 2 eggs", temp:"160°C", time:"8–10 min", dish:null,
+    steps:"Whisk 2 eggs (or 1 egg + 2 whites) with chopped onion, tomato, coriander, chilli and salt. Pour into greased silicone or ceramic cups and cook until just set.",
+    note:"Silicone cups don't need oil, which keeps it leaner." },
+
+  { cat:"Veg & Soya", name:"Paneer tikka", protein:"~18g protein per 100g paneer", temp:"180–200°C", time:"8–10 min", dish:"Air fryer paneer tikka",
+    steps:"Marinate paneer cubes (with capsicum and onion) in hung curd, a spoon of besan and spices for 20–30 min. Single layer, turn halfway until the edges are charred." },
+  { cat:"Veg & Soya", name:"Crispy soya chunks", protein:"~26g protein per 50g dry chunks", temp:"200°C", time:"8–10 min", dish:"Air fryer crispy soya chunks",
+    steps:"Boil or soak the chunks, squeeze out ALL the water, toss with spices, a spoon of besan/cornflour and a little oil. Shake the basket halfway until crisp.",
+    note:"Great high-protein, low-fat evening snack — it's in your Day 3 and Day 5 menus." },
+  { cat:"Veg & Soya", name:"Tandoori soya chaap", protein:"~12–17g protein per 100g (varies by brand — check the pack)", temp:"190–200°C", time:"10–12 min", dish:"Air fryer soya chaap tikka",
+    steps:"Marinate chaap sticks in hung curd, tandoori masala, lemon and a little besan for 30 min. Single layer, turn halfway until the edges are charred." },
+  { cat:"Veg & Soya", name:"Crispy tofu cubes", protein:"~13–15g protein per 100g", temp:"200°C", time:"12–15 min", dish:null,
+    steps:"Press the tofu for 15 min, cube it, toss with spices, cornflour and an oil spray. Shake halfway." },
+  { cat:"Veg & Soya", name:"Sprouts & moong tikki", protein:"~8–10g protein per 2 tikkis", temp:"180°C", time:"12–15 min", dish:"Air fryer sprouts tikki",
+    steps:"Steam sprouts, mash coarsely with grated ginger, green chilli, spices and a spoon of besan or oats to bind. Shape into patties, light oil spray, flip halfway." },
+  { cat:"Veg & Soya", name:"Chana dal shami kebab", protein:"~8–10g protein per 3 kebabs", temp:"180–190°C", time:"12–15 min", dish:null,
+    steps:"Boil soaked chana dal until soft, grind with whole spices, onion and mint into a dry mix (add a little paneer or an egg to bind). Shape into patties, spray with oil, flip halfway." },
+  { cat:"Veg & Soya", name:"Hara bhara kebab", protein:"~6–8g protein per 3 pieces (add paneer for more)", temp:"180°C", time:"10–12 min", dish:null,
+    steps:"Mash steamed spinach and peas with a little paneer, besan and spices. Shape into patties, spray lightly with oil, flip once.",
+    note:"Lower in protein than the others — pair it with curd or a boiled egg." },
+
+  { cat:"Snacks & Sides", name:"Roasted chickpeas (chana)", protein:"~9g protein per 100g cooked", temp:"200°C", time:"12–15 min", dish:null,
+    steps:"Use boiled chana, dry it very well, toss with spices and 1 tsp oil. Shake halfway until crunchy." },
+  { cat:"Snacks & Sides", name:"Masala peanuts", protein:"~7g protein per 30g — but about 170 kcal", temp:"160–170°C", time:"8–10 min", dish:null,
+    steps:"Toss raw peanuts with chaat masala, chilli and a few drops of oil. Shake every 3 minutes so they roast evenly.",
+    note:"Calorie-dense — measure out a 30g handful." },
+  { cat:"Snacks & Sides", name:"Tandoori gobi / broccoli", protein:"~3g protein per 100g — a veg side", temp:"200°C", time:"10–12 min", dish:null,
+    steps:"Marinate florets in hung curd, tandoori masala and lemon for 20 min. Single layer, shake halfway until the edges char." },
+  { cat:"Snacks & Sides", name:"Sweet potato wedges", protein:"A carb source — ~40g carbs per 200g", temp:"200°C", time:"15–18 min", dish:null,
+    steps:"Cut into wedges, soak 10 min, dry well, toss with a little oil and salt. Shake halfway." }
+];
+function renderAirFryer(){
+  let html = `<div class="progress-card">
+    <div class="progress-label">🍗 Air Fryer — high-protein cooking</div>
+    <div class="small-note">Temperatures and times are starting points — every air fryer runs a little different, so check doneness the first time. Preheat 3–5 minutes, don't overcrowd the basket, and shake or turn halfway. Your Day 2–6 menus already use the tikka, fish, chicken breast and crispy soya recipes. Only recipes with a ▶ Watch button have a video.</div>
+    <div class="af-filter">${AF_CATS.map(c=>`<button class="af-filter-btn ${afFilter===c?'active':''}" data-af-filter="${c}">${c}</button>`).join("")}</div>
+  </div>`;
+  AIR_FRYER.forEach((r,i)=>{
+    if(afFilter !== "All" && r.cat !== afFilter) return;
+    const uid = "af-"+i;
+    const hasVid = r.dish && RECIPE_VIDEO_IDS[r.dish];
+    html += `<div class="supp-card" style="margin-bottom:12px;">
+      <div class="supp-h" style="margin-bottom:6px;">${r.name}</div>
+      <div class="af-chips">
+        <span class="af-chip">${r.protein}</span>
+        <span class="af-chip">${r.temp}</span>
+        <span class="af-chip">${r.time}</span>
+      </div>
+      <p style="margin:8px 0 4px;font-size:13px;line-height:1.55;">${r.steps}</p>
+      ${r.note ? `<p class="small-note" style="margin:4px 0;">${r.note}</p>` : ""}
+      ${hasVid ? `<a class="video-link" href="javascript:void(0)" onclick="toggleVideo('${uid}','${r.dish}')">▶ Watch recipe</a><div id="vidbox-${uid}" style="display:none"></div>` : ""}
+    </div>`;
   });
   return html;
 }
@@ -1221,7 +1366,7 @@ function renderInsights(){
       <div class="week-summary-item"><div class="week-summary-val">${week.totalVolume}kg</div><div class="week-summary-label">Total Volume</div></div>
       <div class="week-summary-item"><div class="week-summary-val">${week.daysActive}/6</div><div class="week-summary-label">Days Trained</div></div>
       <div class="week-summary-item"><div class="week-summary-val">${week.avgSleep ? week.avgSleep+'h' : '—'}</div><div class="week-summary-label">Avg Sleep</div></div>
-      <div class="week-summary-item"><div class="week-summary-val">${week.waterDaysHit}/7</div><div class="week-summary-label">Water Goal Hit</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${week.avgHabitPct!==null ? week.avgHabitPct+'%' : '—'}</div><div class="week-summary-label">Habits Done</div></div>
     </div>
   </div>
   <div class="progress-card">
@@ -1267,7 +1412,7 @@ function renderInsights(){
           <span>${h}</span>
           <span style="font-family:'JetBrains Mono',monospace;color:#7A9E85;">${count}/${hStats.totalDays} days (${pct}%)</span>
         </div>
-        <div class="water-bar-bg" style="height:8px;"><div class="water-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,#7A9E85,#7A9E85);"></div></div>
+        <div class="bar-bg" style="height:8px;"><div class="bar-fill" style="width:${pct}%;background:linear-gradient(90deg,#7A9E85,#7A9E85);"></div></div>
       </div>`;
     });
     html += `<div class="small-note" style="margin-top:4px;">Based on the last 30 days.</div>`;
@@ -1505,15 +1650,6 @@ function startRestTimer(seconds){
       restTimerInterval = null;
       bar.style.display = "none";
       if(navigator.vibrate) navigator.vibrate([200,100,200]);
-      speak("Rest complete. Time for your next set.");
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        osc.frequency.value = 880;
-        osc.connect(ctx.destination);
-        osc.start();
-        setTimeout(()=>osc.stop(), 300);
-      } catch(e){}
       return;
     }
     text.textContent = "Rest: " + remaining + "s";
@@ -1534,6 +1670,7 @@ function render(){
   else if(currentTab==="insights") content.innerHTML = renderInsights();
   else if(currentTab==="workout") content.innerHTML = renderWorkout();
   else if(currentTab==="meals") content.innerHTML = renderMeals();
+  else if(currentTab==="airfryer") content.innerHTML = renderAirFryer();
   else if(currentTab==="grocery") content.innerHTML = renderGrocery();
   else if(currentTab==="recovery") content.innerHTML = renderRecovery();
   else if(currentTab==="progress") content.innerHTML = renderProgress();
@@ -1616,9 +1753,7 @@ function render(){
       log.workout[name] = true; // auto-mark done once at least one real set is logged
       saveLog(log);
       if(wasPR){
-        speak("New personal record! " + weightVal + " kilograms on " + name + ". Great work.");
-      } else {
-        speak("Set logged. " + weightVal + " kilos for " + repsVal + " reps. Rest ninety seconds.");
+        celebrate("🏆 New PR! " + weightVal + "kg — " + name);
       }
       startRestTimer(90);
       render();
@@ -1698,22 +1833,9 @@ function render(){
   if(exportBtn){
     exportBtn.addEventListener("click", exportAllData);
   }
-  content.querySelectorAll("[data-water-add]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const ml = parseInt(btn.dataset.waterAdd, 10);
-      log.water = (log.water||0) + ml;
-      saveLog(log);
-      render();
-    });
+  content.querySelectorAll("[data-af-filter]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{ afFilter = btn.dataset.afFilter; render(); });
   });
-  const waterResetBtn = document.getElementById("waterResetBtn");
-  if(waterResetBtn){
-    waterResetBtn.addEventListener("click", ()=>{
-      log.water = 0;
-      saveLog(log);
-      render();
-    });
-  }
   content.querySelectorAll("[data-habit-cb]").forEach(cb=>{
     cb.addEventListener("change", ()=>{
       const h = cb.dataset.habitCb;
@@ -1772,32 +1894,7 @@ function render(){
       render();
     });
   }
-  const reminderBtn = document.getElementById("reminderToggleBtn");
-  if(reminderBtn){
-    reminderBtn.addEventListener("click", async ()=>{
-      if(waterRemindersOn){
-        waterRemindersOn = false;
-        localStorage.setItem("water-reminders-on", "false");
-        stopWaterReminders();
-        render();
-        return;
-      }
-      if(!("Notification" in window)){
-        alert("Your browser doesn't support notifications.");
-        return;
-      }
-      const perm = await Notification.requestPermission();
-      if(perm === "granted"){
-        waterRemindersOn = true;
-        localStorage.setItem("water-reminders-on", "true");
-        startWaterReminders();
-        new Notification("💧 Reminders on", { body: "I'll nudge you roughly every 90 minutes while the app is open.", icon: "icons/icon-192.png" });
-      } else {
-        alert("Notification permission was denied. You can still track water manually — reminders just won't pop up.");
-      }
-      render();
-    });
-  }
+  postRender();
 }
 
 render();
