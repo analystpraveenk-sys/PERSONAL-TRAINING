@@ -192,6 +192,32 @@
 </div>
 
 <script>
+/* Load check — shows a message if the app can't start (for example when index.html was only partly uploaded). */
+(function(){
+  window.__chayilBoot = false;
+  function show(html){
+    if(document.getElementById("bootProblem")) return;
+    var d = document.createElement("div");
+    d.id = "bootProblem";
+    d.style.cssText = "margin:16px;padding:14px 16px;border:1px solid #C2703D;border-radius:12px;background:#16202E;color:#F2EFE9;font:14px/1.55 sans-serif;";
+    d.innerHTML = html;
+    var host = document.body || document.documentElement;
+    host.insertBefore(d, host.firstChild);
+  }
+  window.addEventListener("error", function(e){
+    if(window.__chayilBoot) return;
+    show("<b>Chayil hit an error while starting.</b><br>" + (e.message || "Unknown error") + (e.lineno ? " (line " + e.lineno + ")" : "") + "<br><br>Re-upload the complete index.html to GitHub, then close and reopen the app.");
+  });
+  window.addEventListener("load", function(){
+    setTimeout(function(){
+      if(!window.__chayilBoot){
+        show("<b>Chayil did not finish loading.</b><br>The index.html on GitHub is probably incomplete (a copy-paste can get cut off). Re-upload the full file, check that it ends with &lt;/html&gt;, then close and reopen the app.");
+      }
+    }, 1500);
+  });
+})();
+</script>
+<script>
 /* ---------------- DATA ---------------- */
 const TARGETS = { calories: 2950, protein: 160, carbs: 398, fat: 80 };
 
@@ -305,6 +331,7 @@ const GROCERY = [
   { cat:"Gut-friendly extras", items:["Ajwain & jeera (for digestion)","Chia/flax seeds — 100g (soak, don't overdo)","Isabgol/psyllium husk — 1 pack (only if needed)"] }
 ];
 
+const APP_VERSION = "2026-10-03.2";
 /* ---------------- WINTER ARC CALENDAR ---------------- */
 const WINTER_START = "2026-10-05";   // Monday — week 1 of 12
 const WINTER_WEEKS = 12;
@@ -431,9 +458,18 @@ function habitHistoryStats(days){
   }
   return { counts, dayRows, list, totalDays: days };
 }
+function setsOf(rec){
+  if(!rec) return [];
+  if(Array.isArray(rec.sets)) return rec.sets;
+  return (rec.weight && rec.reps) ? [{ weight: rec.weight, reps: rec.reps }] : [];  // older single-set format
+}
 function loadExLog(date){
-  try { const raw = localStorage.getItem("exlog:"+date); return raw ? JSON.parse(raw) : {}; }
-  catch(e){ return {}; }
+  try {
+    const raw = localStorage.getItem("exlog:"+date);
+    const data = raw ? JSON.parse(raw) : {};
+    Object.keys(data).forEach(k=>{ data[k] = { sets: setsOf(data[k]) }; });
+    return data;
+  } catch(e){ return {}; }
 }
 function saveExLog(date, data){ localStorage.setItem("exlog:"+date, JSON.stringify(data)); }
 // exLog[exerciseName] = { sets: [{weight, reps}, ...] } — one entry per logged set today
@@ -446,9 +482,10 @@ function getExerciseHistory(exerciseName){
       try {
         const data = JSON.parse(localStorage.getItem(key));
         const rec = data[exerciseName];
-        if(rec && rec.sets && rec.sets.length){
-          const bestWeight = Math.max(...rec.sets.map(s=>s.weight||0));
-          out.push({ date, weight: bestWeight, sets: rec.sets });
+        const sets = setsOf(rec);
+        if(sets.length){
+          const bestWeight = Math.max(...sets.map(s=>s.weight||0));
+          out.push({ date, weight: bestWeight, sets });
         }
       } catch(e){}
     }
@@ -611,7 +648,7 @@ function countTotalSetsLogged(){
     if(key && key.startsWith("exlog:")){
       try {
         const d = JSON.parse(localStorage.getItem(key));
-        Object.values(d).forEach(rec=>{ if(rec.sets) count += rec.sets.length; });
+        Object.values(d).forEach(rec=>{ count += setsOf(rec).length; });
       } catch(e){}
     }
   }
@@ -640,7 +677,7 @@ function weeklySummary(){
       const exraw = localStorage.getItem("exlog:"+iso);
       if(exraw){
         const exd = JSON.parse(exraw);
-        Object.values(exd).forEach(rec=>{ if(rec.sets) rec.sets.forEach(s=>{ totalVolume += (s.weight||0)*(s.reps||0); }); });
+        Object.values(exd).forEach(rec=>{ setsOf(rec).forEach(s=>{ totalVolume += (s.weight||0)*(s.reps||0); }); });
       }
       const sHist = sleepHistory.find(s=>s.date===iso);
       if(sHist){ sleepSum += sHist.hours; sleepDays++; }
@@ -684,7 +721,7 @@ function allDataSummary(){
     if(key && key.startsWith("exlog:")){
       try {
         const d = JSON.parse(localStorage.getItem(key));
-        Object.values(d).forEach(rec=>{ if(rec.sets) totalSets += rec.sets.length; });
+        Object.values(d).forEach(rec=>{ totalSets += setsOf(rec).length; });
       } catch(e){}
     }
   }
@@ -1581,4 +1618,650 @@ function renderRecovery(){
   <div class="supp-card">
     <div class="supp-h">⚠️ Injury Prevention — Know the Difference</div>
     <p><b>Normal:</b> Dull, general muscle soreness (DOMS) that peaks 24-48h after training and fades with movement.</p>
-    <p><b>Stop immediately:</b> Sharp, sudden, localized pain during a lift, joint pain that doesn't match muscle fatigue, or any pain that ge
+    <p><b>Stop immediately:</b> Sharp, sudden, localized pain during a lift, joint pain that doesn't match muscle fatigue, or any pain that gets worse as you keep training through it. Racking the bar and walking away is always the right call over pushing through real pain.</p>
+    <p>Most gym injuries come from three things: skipping the warm-up, ego-lifting beyond your controlled range of motion, and ignoring early joint niggles until they become real injuries. If something feels consistently "off" in a joint for more than a week, it's worth getting checked rather than working around it.</p>
+  </div>
+
+  <div class="supp-card">
+    <div class="supp-h">🚶 Sunday — Active Recovery</div>
+    <p>Rest day doesn't mean total stillness. A 20-30 minute walk, light stretching, or foam rolling actually speeds up recovery by moving blood through sore muscles, without adding training stress. Keep it easy — this isn't a workout, it's active rest.</p>
+  </div>
+
+  <div class="supp-card">
+    <div class="supp-h">🩹 Injury / Pain Log</div>
+    <p class="small-note" style="margin-top:-4px;margin-bottom:10px;">Quick notes when something feels off — helps you and a doctor (if it comes to that) see exactly when a niggle started and how it's progressed.</p>
+    <select id="injuryExerciseSelect" class="stat-select">
+      ${allExerciseNames().map(n=>`<option value="${n}">${n}</option>`).join('')}
+      <option value="General">General / not exercise-specific</option>
+    </select>
+    <textarea id="injuryNoteInput" class="injury-textarea" placeholder="What's going on? e.g. 'Sharp twinge in left shoulder on the last rep, felt it for the rest of the day.'"></textarea>
+    <button class="weight-save" id="injurySaveBtn" style="width:100%;">Log This</button>
+    <div style="margin-top:14px;">`;
+  if(injuryLog.length===0){
+    html += `<div class="small-note">No entries yet — hopefully it stays that way.</div>`;
+  } else {
+    [...injuryLog].reverse().forEach((entry, revIdx)=>{
+      const realIdx = injuryLog.length - 1 - revIdx;
+      html += `<div class="injury-row">
+        <div style="display:flex;justify-content:space-between;"><b style="font-size:13px;">${entry.exercise}</b><span class="hist-date">${entry.date}</span></div>
+        <div style="font-size:13px;color:#F2EFE9;margin-top:4px;">${entry.note}</div>
+        <button class="del-set-btn" data-del-injury-idx="${realIdx}" style="margin-top:6px;">Delete entry</button>
+      </div>`;
+    });
+  }
+  html += `</div>
+  </div>`;
+  return html;
+}
+
+function svgLineChart(points, color, unit){
+  if(points.length < 2){
+    return `<div class="small-note">Log at least 2 entries to see a trend chart.</div>`;
+  }
+  const w = 320, h = 140, pad = 28;
+  const vals = points.map(p=>p.value);
+  let min = Math.min(...vals), max = Math.max(...vals);
+  if(min===max){ min -= 1; max += 1; }
+  const xStep = (w - pad*2) / (points.length - 1);
+  const coords = points.map((p,i)=>{
+    const x = pad + i*xStep;
+    const y = h - pad - ((p.value - min)/(max-min)) * (h - pad*2);
+    return [x,y];
+  });
+  const path = coords.map((c,i)=> (i===0?"M":"L") + c[0].toFixed(1) + "," + c[1].toFixed(1)).join(" ");
+  const dots = coords.map((c,i)=>`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="3.5" fill="${color}"><title>${points[i].date}: ${points[i].value}${unit}</title></circle>`).join("");
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;display:block;">
+    <text x="${pad}" y="14" font-size="10" fill="#8B96A3" font-family="JetBrains Mono, monospace">${max}${unit}</text>
+    <text x="${pad}" y="${h-pad+16}" font-size="10" fill="#8B96A3" font-family="JetBrains Mono, monospace">${min}${unit}</text>
+    <path d="${path}" fill="none" stroke="${color}" stroke-width="2.5"/>
+    ${dots}
+  </svg>`;
+}
+
+function renderInsights(){
+  const streak = getWorkoutStreak();
+  const stats = sessionStats();
+  const week = weeklySummary();
+  let html = `<div class="progress-card">
+    <div class="progress-label">📅 This Week</div>
+    <div class="week-summary-grid">
+      <div class="week-summary-item"><div class="week-summary-val">${week.totalVolume}kg</div><div class="week-summary-label">Total Volume</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${week.daysActive}/6</div><div class="week-summary-label">Days Trained</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${week.avgSleep ? week.avgSleep+'h' : '—'}</div><div class="week-summary-label">Avg Sleep</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${week.avgHabitPct!==null ? week.avgHabitPct+'%' : '—'}</div><div class="week-summary-label">Habits Done</div></div>
+    </div>
+  </div>
+  <div class="progress-card">
+    <div class="progress-label">🔥 Consistency</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:28px;color:#C2703D;">${streak} <span style="font-size:14px;color:#8B96A3;">day streak</span></div>
+  </div>`;
+
+  // Consistency calendar: last 28 days, 7 per row
+  html += `<div class="progress-card">
+    <div class="progress-label">Last 28 Days</div>
+    <div class="calendar-grid">`;
+  const days = [];
+  for(let i=27;i>=0;i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    const iso = d.toISOString().slice(0,10);
+    days.push({iso, level: dayHasActivity(iso), dow: d.getDay()});
+  }
+  days.forEach(d=>{
+    const colors = ["#212D3D", "#3D5468", "#7A9E85"];
+    html += `<div class="cal-cell" style="background:${colors[d.level]}" title="${d.iso}"></div>`;
+  });
+  html += `</div>
+    <div style="display:flex;gap:12px;margin-top:10px;font-size:11px;color:#8B96A3;align-items:center;">
+      <span style="display:flex;align-items:center;gap:4px;"><span class="legend-dot" style="background:#212D3D;"></span>Nothing logged</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span class="legend-dot" style="background:#3D5468;"></span>Partial</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span class="legend-dot" style="background:#7A9E85;"></span>Full day</span>
+    </div>
+  </div>`;
+
+  // Habit History — per-habit completion over last 30 days
+  const hStats = habitHistoryStats(30);
+  html += `<div class="progress-card">
+    <div class="progress-label">✅ Habit History <span style="color:#4A8FC2;">${getHabitStreak()}🔥 streak</span></div>`;
+  if(hStats.list.length===0){
+    html += `<div class="small-note">No habits set up yet — add some on the Today tab.</div>`;
+  } else {
+    hStats.list.forEach(h=>{
+      const count = hStats.counts[h];
+      const pct = Math.round((count/hStats.totalDays)*100);
+      html += `<div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+          <span>${h}</span>
+          <span style="font-family:'JetBrains Mono',monospace;color:#7A9E85;">${count}/${hStats.totalDays} days (${pct}%)</span>
+        </div>
+        <div class="bar-bg" style="height:8px;"><div class="bar-fill" style="width:${pct}%;background:linear-gradient(90deg,#7A9E85,#7A9E85);"></div></div>
+      </div>`;
+    });
+    html += `<div class="small-note" style="margin-top:4px;">Based on the last 30 days.</div>`;
+  }
+  html += `</div>`;
+
+  // Strength levels
+  html += `<div class="progress-card">
+    <div class="progress-label">💪 Strength Levels</div>
+    <div class="small-note" style="margin-bottom:12px;">Based on your best logged set (estimated 1RM) vs. your bodyweight, benchmarked against standard strength norms for men.</div>`;
+  const bw = getLatestBodyweight();
+  Object.keys(LIFT_STANDARDS).forEach(liftName=>{
+    const best1RM = bestEstimated1RM(liftName);
+    const thresholds = LIFT_STANDARDS[liftName];
+    if(best1RM === 0){
+      html += `<div class="lift-level-card">
+        <div class="lift-level-name">${liftName}</div>
+        <div class="small-note">No sets logged yet — log a set to see your level.</div>
+      </div>`;
+      return;
+    }
+    const ratio = best1RM / bw;
+    const level = strengthLevelFor(ratio, thresholds);
+    const next = nextThreshold(ratio, thresholds);
+    const nextText = next ? `${Math.round(next.ratio*bw - best1RM)}kg more (est. 1RM) to reach ${next.level}` : "You're at Elite — top-tier relative strength.";
+    html += `<div class="lift-level-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="lift-level-name">${liftName}</div>
+        <span class="level-badge level-${level.toLowerCase()}">${level}</span>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#8B96A3;margin-top:4px;">Est. 1RM: ${best1RM}kg (${ratio.toFixed(2)}× bodyweight)</div>
+      <div class="small-note" style="margin-top:4px;">${nextText}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // PR History — all-time best per exercise, one glance
+  const prList = prHistoryList();
+  html += `<div class="progress-card">
+    <div class="progress-label">🏆 PR History</div>`;
+  if(prList.length===0){
+    html += `<div class="small-note">No PRs yet — log a set on the Today tab to start building this.</div>`;
+  } else {
+    prList.forEach(pr=>{
+      html += `<div class="pr-row"><span>${pr.name}</span><span style="font-family:'JetBrains Mono',monospace;color:#C2703D;">${pr.best}kg <span style="color:#8B96A3;font-size:11px;">(${pr.date})</span></span></div>`;
+    });
+  }
+  html += `</div>`;
+
+  // Achievements
+  const achievements = getAchievements();
+  const unlockedCount = achievements.filter(a=>a.done).length;
+  html += `<div class="progress-card">
+    <div class="progress-label">🏅 Achievements (${unlockedCount}/${achievements.length})</div>`;
+  achievements.forEach(a=>{
+    html += `<div class="achievement-row ${a.done?'unlocked':''}">
+      <span class="achievement-icon">${a.done ? a.icon : '🔒'}</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;color:${a.done?'#F2EFE9':'#8B96A3'};">${a.name}</div>
+        <div class="small-note">${a.desc}</div>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Coach's Corner
+  html += `<div class="progress-card">
+    <div class="progress-label">🎯 Coach's Corner</div>`;
+  const insights = [];
+  if(streak >= 3) insights.push(`🔥 ${streak}-day streak — this is exactly when strength adaptation compounds. Don't break it for anything less than real recovery need.`);
+  if(streak === 0) insights.push("No active streak right now. One logged session today restarts it — momentum matters more than any single workout.");
+  allExerciseNames().slice(0,0); // no-op, keep list logic simple
+  ["Back Squat","Deadlift","Barbell Bench Press"].forEach(name=>{
+    const hist = getExerciseHistory(name);
+    if(hist.length>0){
+      const lastDate = hist[hist.length-1].date;
+      const daysSince = Math.round((new Date(DATE) - new Date(lastDate)) / 86400000);
+      if(daysSince >= 10) insights.push(`⚠️ ${name} hasn't been logged in ${daysSince} days — don't let a key lift quietly disappear from your training.`);
+    }
+  });
+  insights.push("💬 " + coachTipOfDay());
+  insights.forEach(t=>{ html += `<div class="coach-tip">${t}</div>`; });
+  html += `</div>`;
+
+  return html;
+}
+
+function renderProgress(){
+  const sortedWeights = [...weightHistory].sort((a,b)=>a.date.localeCompare(b.date));
+  let deltaHtml = "";
+  if(sortedWeights.length >= 2){
+    const first = sortedWeights[0].weight, last = sortedWeights[sortedWeights.length-1].weight;
+    const diff = (last - first);
+    const sign = diff >= 0 ? "+" : "";
+    const color = diff >= 0 ? "#7A9E85" : "#A66B45";
+    deltaHtml = `<div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:${color}; margin-top:8px;">
+      ${sign}${diff.toFixed(1)}kg since ${first!==undefined ? sortedWeights[0].date : ""} (${first}kg → ${last}kg)
+    </div>`;
+  }
+
+  let html = `<div class="progress-card">
+    <div class="progress-label">😴 Log last night's sleep</div>
+    <div class="weight-row">
+      <input type="number" placeholder="7.5 (hours)" id="sleepInput" class="weight-input" step="0.5" />
+      <button class="weight-save" id="sleepSaveBtn">Save</button>
+    </div>
+    ${(()=>{
+      const sorted = [...sleepHistory].sort((a,b)=>a.date.localeCompare(b.date));
+      if(sorted.length===0) return "";
+      const last7 = sorted.slice(-7);
+      const avg = (last7.reduce((s,x)=>s+x.hours,0)/last7.length).toFixed(1);
+      return `<div class="small-note" style="margin-top:8px;">7-day average: <b style="color:#4A8FC2;">${avg}h</b></div>`;
+    })()}
+  </div>
+  <div class="progress-card">
+    <div class="progress-label">Sleep trend</div>
+    ${svgLineChart([...sleepHistory].sort((a,b)=>a.date.localeCompare(b.date)).map(s=>({date:s.date, value:s.hours})), "#4A8FC2", "h")}
+  </div>
+  <div class="progress-card">
+    <div class="progress-label">Log today's weight</div>
+    <div class="weight-row">
+      <input type="number" placeholder="73.0" id="weightInput" class="weight-input" />
+      <button class="weight-save" id="weightSaveBtn">Save</button>
+    </div>
+    ${deltaHtml}
+  </div>
+  <div class="progress-card">
+    <div class="progress-label">Weight trend</div>
+    ${svgLineChart(sortedWeights.map(w=>({date:w.date, value:w.weight})), "#C2703D", "kg")}
+  </div>
+  <div class="progress-card">
+    <div class="progress-label">Weight history</div>`;
+  if(weightHistory.length===0){
+    html += `<div class="small-note">No entries yet — log your weight weekly (same day, same time, e.g. every Monday morning) to track real trends.</div>`;
+  } else {
+    [...weightHistory].reverse().forEach(w=>{
+      html += `<div class="hist-row"><span class="hist-date">${w.date}</span><span class="hist-val">${w.weight} kg</span></div>`;
+    });
+  }
+  html += `</div>
+
+  <div class="progress-card">
+    <div class="progress-label">Log body measurements (cm)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <input type="number" placeholder="Chest" id="mChest" class="weight-input" />
+      <input type="number" placeholder="Waist" id="mWaist" class="weight-input" />
+      <input type="number" placeholder="Arms" id="mArms" class="weight-input" />
+      <input type="number" placeholder="Thighs" id="mThighs" class="weight-input" />
+    </div>
+    <button class="weight-save" id="measureSaveBtn" style="width:100%;">Save Measurements</button>
+  </div>
+  <div class="progress-card">
+    <div class="progress-label">Chest trend</div>
+    ${svgLineChart([...measureHistory].sort((a,b)=>a.date.localeCompare(b.date)).filter(m=>m.chest).map(m=>({date:m.date, value:m.chest})), "#4A8FC2", "cm")}
+  </div>
+  <div class="progress-card">
+    <div class="progress-label">Measurement history</div>`;
+  if(measureHistory.length===0){
+    html += `<div class="small-note">No measurements logged yet. Chest, waist, arms, and thighs tell you more about actual muscle gain than the scale alone — measure once every 2 weeks, same time of day.</div>`;
+  } else {
+    [...measureHistory].reverse().forEach(m=>{
+      html += `<div class="hist-row"><span class="hist-date">${m.date}</span><span class="hist-val">C${m.chest||"-"} W${m.waist||"-"} A${m.arms||"-"} T${m.thighs||"-"}</span></div>`;
+    });
+  }
+  html += `</div>`;
+
+  const exNames = allExerciseNames();
+  if(!selectedStrengthExercise || !exNames.includes(selectedStrengthExercise)) selectedStrengthExercise = exNames[0];
+  const exHist = getExerciseHistory(selectedStrengthExercise);
+  const best = exHist.length ? Math.max(...exHist.map(h=>h.weight||0)) : 0;
+  html += `<div class="progress-card">
+    <div class="progress-label">Strength progress</div>
+    <select id="strengthExerciseSelect" class="stat-select">
+      ${exNames.map(n=>`<option value="${n}" ${n===selectedStrengthExercise?'selected':''}>${n}</option>`).join('')}
+    </select>
+    <div style="font-family:'JetBrains Mono',monospace;color:#C2703D;font-size:14px;margin-bottom:8px;">Best logged: ${best>0?best+'kg':'—'}</div>
+    ${svgLineChart(exHist.map(h=>({date:h.date, value:h.weight})), "#C2703D", "kg")}
+  </div>
+
+  <div class="progress-card">
+    <div class="progress-label">📸 Progress Photos</div>
+    <label class="photo-upload-btn">
+      📷 Tap to add today's photo
+      <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;" />
+    </label>
+    <div class="small-note" style="margin-top:8px;">Photos are compressed and saved only on this phone — same as everything else in this app, nothing uploaded anywhere.</div>
+    <div class="photo-grid">`;
+  [...photoHistory].reverse().forEach((p,revIdx)=>{
+    const realIdx = photoHistory.length - 1 - revIdx;
+    html += `<div class="photo-thumb-wrap">
+      <img src="${p.dataUrl}" class="photo-thumb" />
+      <span class="photo-date-tag">${p.date}</span>
+      <button class="photo-del-btn" data-del-photo-idx="${realIdx}">✕</button>
+    </div>`;
+  });
+  html += `</div>
+  </div>`;
+
+  // All My Data — full summary + export
+  const summary = allDataSummary();
+  html += `<div class="progress-card">
+    <div class="progress-label">📦 All My Data <span style="font-size:10px;color:#8B96A3;font-family:'JetBrains Mono',monospace;float:right;">v${APP_VERSION}</span></div>
+    <div class="week-summary-grid">
+      <div class="week-summary-item"><div class="week-summary-val">${summary.workoutDays}</div><div class="week-summary-label">Workout Days</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${summary.totalSets}</div><div class="week-summary-label">Sets Logged</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${summary.mealsLoggedDays}</div><div class="week-summary-label">Days Meals Logged</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${summary.weightEntries}</div><div class="week-summary-label">Weight Entries</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${summary.sleepEntries}</div><div class="week-summary-label">Sleep Entries</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${summary.measureEntries}</div><div class="week-summary-label">Measurements</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${summary.photoEntries}</div><div class="week-summary-label">Photos</div></div>
+      <div class="week-summary-item"><div class="week-summary-val">${summary.injuryEntries}</div><div class="week-summary-label">Injury Notes</div></div>
+    </div>
+    <button class="weight-save" id="exportDataBtn" style="width:100%;margin-top:14px;">⬇️ Download Full Backup (.json)</button>
+    <div class="small-note" style="margin-top:8px;">This saves EVERYTHING — every logged set, meal, weight, sleep entry, photo, and note — as one file to your phone. Worth doing every few weeks, since clearing your browser data or resetting your phone would otherwise erase all of this permanently.</div>
+  </div>`;
+  return html;
+}
+
+let restTimerInterval = null;
+let voiceEnabled = false; // voice feature disabled by user request
+function speak(text){
+  return; // no-op — sound intentionally removed from this app
+}
+function startRestTimer(seconds){
+  const bar = document.getElementById("restTimerBar");
+  const text = document.getElementById("restTimerText");
+  if(restTimerInterval) clearInterval(restTimerInterval);
+  let remaining = seconds;
+  bar.style.display = "flex";
+  text.textContent = "Rest: " + remaining + "s";
+  restTimerInterval = setInterval(()=>{
+    remaining--;
+    if(remaining <= 0){
+      clearInterval(restTimerInterval);
+      restTimerInterval = null;
+      bar.style.display = "none";
+      if(navigator.vibrate) navigator.vibrate([200,100,200]);
+      return;
+    }
+    text.textContent = "Rest: " + remaining + "s";
+  }, 1000);
+}
+document.getElementById("restTimerSkip").addEventListener("click", ()=>{
+  if(restTimerInterval){ clearInterval(restTimerInterval); restTimerInterval = null; }
+  document.getElementById("restTimerBar").style.display = "none";
+});
+
+function render(){
+  renderTabs();
+  const _pw = programWeekInfo();
+  const _arcTxt = _pw.status === "active" ? `Winter Arc · Week ${_pw.weekNum}/${WINTER_WEEKS} · `
+                : _pw.status === "pre" ? `Winter Arc starts ${fmtDay(WINTER_START)} · ` : "";
+  document.getElementById("headerSub").textContent =
+    `${_arcTxt}${todaysWorkout.tag} day · ${todaysMeals.style} menu`;
+  document.getElementById("verseLine").textContent = verseOfDay();
+  const content = document.getElementById("content");
+  if(currentTab==="today") content.innerHTML = renderToday();
+  else if(currentTab==="arc") content.innerHTML = renderArc();
+  else if(currentTab==="insights") content.innerHTML = renderInsights();
+  else if(currentTab==="workout") content.innerHTML = renderWorkout();
+  else if(currentTab==="meals") content.innerHTML = renderMeals();
+  else if(currentTab==="prep") content.innerHTML = renderPrep();
+  else if(currentTab==="airfryer") content.innerHTML = renderAirFryer();
+  else if(currentTab==="grocery") content.innerHTML = renderGrocery();
+  else if(currentTab==="recovery") content.innerHTML = renderRecovery();
+  else if(currentTab==="progress") content.innerHTML = renderProgress();
+
+  content.querySelectorAll("[data-meal-cb]").forEach(cb=>{
+    cb.addEventListener("change", ()=>{
+      const slot = cb.dataset.mealCb;
+      log.meals[slot] = !log.meals[slot];
+      saveLog(log);
+      render();
+    });
+  });
+  content.querySelectorAll("[data-ex-cb]").forEach(cb=>{
+    cb.addEventListener("change", ()=>{
+      const name = cb.dataset.exCb;
+      log.workout[name] = !log.workout[name];
+      saveLog(log);
+      render();
+    });
+  });
+  content.querySelectorAll("[data-week]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      log.week = parseInt(btn.dataset.week,10);
+      saveLog(log);
+      render();
+    });
+  });
+  const saveBtn = document.getElementById("weightSaveBtn");
+  if(saveBtn){
+    saveBtn.addEventListener("click", ()=>{
+      const val = parseFloat(document.getElementById("weightInput").value);
+      if(!val) return;
+      weightHistory = [...weightHistory.filter(w=>w.date!==DATE), {date:DATE, weight:val}]
+        .sort((a,b)=>a.date.localeCompare(b.date));
+      saveWeightHistory(weightHistory);
+      render();
+    });
+  }
+  const sleepBtn = document.getElementById("sleepSaveBtn");
+  if(sleepBtn){
+    sleepBtn.addEventListener("click", ()=>{
+      const val = parseFloat(document.getElementById("sleepInput").value);
+      if(!val) return;
+      sleepHistory = [...sleepHistory.filter(s=>s.date!==DATE), {date:DATE, hours:val}]
+        .sort((a,b)=>a.date.localeCompare(b.date));
+      saveSleepHistory(sleepHistory);
+      render();
+    });
+  }
+  const measureBtn = document.getElementById("measureSaveBtn");
+  if(measureBtn){
+    measureBtn.addEventListener("click", ()=>{
+      const chest = parseFloat(document.getElementById("mChest").value) || null;
+      const waist = parseFloat(document.getElementById("mWaist").value) || null;
+      const arms = parseFloat(document.getElementById("mArms").value) || null;
+      const thighs = parseFloat(document.getElementById("mThighs").value) || null;
+      if(!chest && !waist && !arms && !thighs) return;
+      measureHistory = [...measureHistory.filter(m=>m.date!==DATE), {date:DATE, chest, waist, arms, thighs}]
+        .sort((a,b)=>a.date.localeCompare(b.date));
+      saveMeasureHistory(measureHistory);
+      render();
+    });
+  }
+  content.querySelectorAll("[data-ex-save]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const name = btn.dataset.exSave;
+      const slug = btn.dataset.exSlug;
+      const weightVal = parseFloat(document.getElementById("w-"+slug).value) || null;
+      const repsVal = parseInt(document.getElementById("r-"+slug).value) || null;
+      if(!weightVal || !repsVal){
+        btn.textContent = "Enter both!";
+        setTimeout(()=>{ btn.textContent = "+ Log Set"; }, 1400);
+        return;
+      }
+      const wasPR = isPR(name, weightVal);
+      exLog[name] = exLog[name] || { sets: [] };
+      if(!exLog[name].sets) exLog[name].sets = [];
+      exLog[name].sets.push({ weight: weightVal, reps: repsVal });
+      saveExLog(DATE, exLog);
+      log.workout[name] = true; // auto-mark done once at least one real set is logged
+      saveLog(log);
+      if(wasPR){
+        celebrate("🏆 New PR! " + weightVal + "kg — " + name);
+      }
+      startRestTimer(HEAVY_LIFTS.includes(name) ? 150 : 90);
+      render();
+    });
+  });
+  content.querySelectorAll("[data-del-set]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const name = btn.dataset.delSet;
+      const idx = parseInt(btn.dataset.delIdx, 10);
+      if(exLog[name] && exLog[name].sets){
+        exLog[name].sets.splice(idx, 1);
+        saveExLog(DATE, exLog);
+        render();
+      }
+    });
+  });
+  const strengthSelect = document.getElementById("strengthExerciseSelect");
+  if(strengthSelect){
+    strengthSelect.addEventListener("change", ()=>{
+      selectedStrengthExercise = strengthSelect.value;
+      render();
+    });
+  }
+  const photoInput = document.getElementById("photoInput");
+  if(photoInput){
+    photoInput.addEventListener("change", (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = (ev)=>{
+        img.onload = ()=>{
+          const maxW = 700;
+          const scale = Math.min(1, maxW/img.width);
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width*scale;
+          canvas.height = img.height*scale;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.6);
+          photoHistory = [...photoHistory.filter(p=>p.date!==DATE), {date:DATE, dataUrl}];
+          if(savePhotoHistory(photoHistory)) render();
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  content.querySelectorAll("[data-del-photo-idx]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const idx = parseInt(btn.dataset.delPhotoIdx, 10);
+      photoHistory.splice(idx, 1);
+      savePhotoHistory(photoHistory);
+      render();
+    });
+  });
+  const injurySaveBtn = document.getElementById("injurySaveBtn");
+  if(injurySaveBtn){
+    injurySaveBtn.addEventListener("click", ()=>{
+      const exercise = document.getElementById("injuryExerciseSelect").value;
+      const note = document.getElementById("injuryNoteInput").value.trim();
+      if(!note) return;
+      injuryLog.push({date:DATE, exercise, note});
+      saveInjuryLog(injuryLog);
+      render();
+    });
+  }
+  content.querySelectorAll("[data-del-injury-idx]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const idx = parseInt(btn.dataset.delInjuryIdx, 10);
+      injuryLog.splice(idx, 1);
+      saveInjuryLog(injuryLog);
+      render();
+    });
+  });
+  const exportBtn = document.getElementById("exportDataBtn");
+  if(exportBtn){
+    exportBtn.addEventListener("click", exportAllData);
+  }
+  content.querySelectorAll("[data-prep-cb]").forEach(cb=>{
+    cb.addEventListener("change", ()=>{
+      const id = cb.dataset.prepCb;
+      const st = loadPrep();
+      st[id] = !st[id];
+      const sess = PREP_SESSIONS.find(x => x.tasks.some(t => t.id === id));
+      let cheer = null;
+      if(st[id] && sess && sess.tasks.every(t => st[t.id]) && !st["_c_" + sess.key]){
+        st["_c_" + sess.key] = true;
+        cheer = "🥘 " + sess.title + " done — nice work!";
+      }
+      savePrep(st);
+      render();
+      if(cheer) celebrate(cheer);
+    });
+  });
+  content.querySelectorAll("[data-af-filter]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{ afFilter = btn.dataset.afFilter; render(); });
+  });
+  content.querySelectorAll("[data-habit-cb]").forEach(cb=>{
+    cb.addEventListener("change", ()=>{
+      const h = cb.dataset.habitCb;
+      log.habits[h] = !log.habits[h];
+      saveLog(log);
+      render();
+    });
+  });
+  content.querySelectorAll("[data-del-habit-idx]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const idx = parseInt(btn.dataset.delHabitIdx, 10);
+      const list = loadHabitList();
+      list.splice(idx, 1);
+      saveHabitList(list);
+      render();
+    });
+  });
+  const addHabitBtn = document.getElementById("addHabitBtn");
+  if(addHabitBtn){
+    addHabitBtn.addEventListener("click", ()=>{
+      const input = document.getElementById("newHabitInput");
+      const val = input.value.trim();
+      if(!val) return;
+      const list = loadHabitList();
+      list.push(val);
+      saveHabitList(list);
+      render();
+    });
+  }
+  content.querySelectorAll("[data-supp-cb]").forEach(cb=>{
+    cb.addEventListener("change", ()=>{
+      const s = cb.dataset.suppCb;
+      log.supplements[s] = !log.supplements[s];
+      saveLog(log);
+      render();
+    });
+  });
+  content.querySelectorAll("[data-del-supp-idx]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const idx = parseInt(btn.dataset.delSuppIdx, 10);
+      const list = loadSupplementList();
+      list.splice(idx, 1);
+      saveSupplementList(list);
+      render();
+    });
+  });
+  const addSuppBtn = document.getElementById("addSuppBtn");
+  if(addSuppBtn){
+    addSuppBtn.addEventListener("click", ()=>{
+      const input = document.getElementById("newSuppInput");
+      const val = input.value.trim();
+      if(!val) return;
+      const list = loadSupplementList();
+      list.push(val);
+      saveSupplementList(list);
+      render();
+    });
+  }
+  postRender();
+}
+
+render();
+window.__chayilBoot = true;   // lets the load-check below know the app started
+
+/* ---------------- PWA install + service worker ---------------- */
+let deferredPrompt;
+window.addEventListener("beforeinstallprompt", (e)=>{
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById("installBanner").style.display = "block";
+});
+document.getElementById("installBtn").addEventListener("click", async ()=>{
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById("installBanner").style.display = "none";
+});
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("service-worker.js").catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
