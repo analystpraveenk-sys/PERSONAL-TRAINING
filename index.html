@@ -331,7 +331,7 @@ const GROCERY = [
   { cat:"Gut-friendly extras", items:["Ajwain & jeera (for digestion)","Chia/flax seeds — 100g (soak, don't overdo)","Isabgol/psyllium husk — 1 pack (only if needed)"] }
 ];
 
-const APP_VERSION = "2026-10-03.2";
+const APP_VERSION = "2026-10-06.1";
 /* ---------------- WINTER ARC CALENDAR ---------------- */
 const WINTER_START = "2026-10-05";   // Monday — week 1 of 12
 const WINTER_WEEKS = 12;
@@ -351,7 +351,8 @@ function programWeekInfo(){
 }
 
 /* ---------------- STATE ---------------- */
-function todayISO(){ return new Date().toISOString().slice(0,10); }
+function localISO(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function todayISO(){ return localISO(new Date()); }
 const DATE = todayISO();
 const dayIndex = new Date().getDay();
 const mealCycleIndex = (dayIndex + 6) % 7;
@@ -404,7 +405,7 @@ function getSupplementStreak(){
   const list = loadSupplementList();
   if(list.length === 0) return 0;
   for(let i=0;i<90;i++){
-    const iso = d.toISOString().slice(0,10);
+    const iso = localISO(d);
     try {
       const raw = localStorage.getItem("log:"+iso);
       if(raw){
@@ -423,7 +424,7 @@ function getHabitStreak(){
   const list = loadHabitList();
   if(list.length === 0) return 0;
   for(let i=0;i<90;i++){
-    const iso = d.toISOString().slice(0,10);
+    const iso = localISO(d);
     try {
       const raw = localStorage.getItem("log:"+iso);
       if(raw){
@@ -444,7 +445,7 @@ function habitHistoryStats(days){
   for(let i=0;i<days;i++){
     const d = new Date();
     d.setDate(d.getDate()-i);
-    const iso = d.toISOString().slice(0,10);
+    const iso = localISO(d);
     let dayHabits = {};
     try {
       const raw = localStorage.getItem("log:"+iso);
@@ -537,7 +538,7 @@ function getWorkoutStreak(){
   let streak = 0;
   let d = new Date();
   for(let i=0;i<90;i++){
-    const iso = d.toISOString().slice(0,10);
+    const iso = localISO(d);
     const dow = d.getDay();
     if(dow===0){ d.setDate(d.getDate()-1); continue; } // Sunday rest day doesn't break streak
     try {
@@ -662,7 +663,7 @@ function weeklySummary(){
   const habitList = loadHabitList();
   for(let i=0;i<7;i++){
     const d = new Date(); d.setDate(d.getDate()-i);
-    const iso = d.toISOString().slice(0,10);
+    const iso = localISO(d);
     const dow = d.getDay();
     try {
       const raw = localStorage.getItem("log:"+iso);
@@ -1704,7 +1705,7 @@ function renderInsights(){
   for(let i=27;i>=0;i--){
     const d = new Date();
     d.setDate(d.getDate()-i);
-    const iso = d.toISOString().slice(0,10);
+    const iso = localISO(d);
     days.push({iso, level: dayHasActivity(iso), dow: d.getDay()});
   }
   days.forEach(d=>{
