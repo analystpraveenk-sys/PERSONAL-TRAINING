@@ -298,7 +298,7 @@ const MEAL_DAYS = [
   { day:"Day 4", style:"Non-Veg", meals:[
     {slot:"Breakfast", items:"3-egg masala omelette (1 tsp oil), 3 multigrain toast, 1 glass buttermilk, 1 banana", cal:664,p:33,c:75,f:25, dish:"Masala omelette"},
     {slot:"Mid-Morning", items:"150g hung curd + 1 banana + 20g roasted peanuts + 2 dates", cal:378,p:18,c:48,f:16, dish:null},
-    {slot:"Lunch", items:"1.5 cup rice, 120g air-fried fish, 1 cup dal, salad", cal:762,p:44,c:110,f:15, dish:"Air fryer fish fry"},
+    {slot:"Lunch", items:"1.5 cup rice, 120g air-fried chicken tikka, 1 cup dal, salad", cal:790,p:54,c:110,f:14, dish:"Air fryer chicken tikka"},
     {slot:"Evening", items:"4 boiled egg whites + banana + sattu drink + 10 almonds", cal:363,p:25,c:49,f:8, dish:null},
     {slot:"Dinner", items:"3 roti, chicken keema with peas (80g chicken), salad, 1 bowl curd", cal:732,p:45,c:85,f:22, dish:"Chicken keema"} ]},
   { day:"Day 5", style:"Veg + Egg", meals:[
@@ -315,14 +315,14 @@ const MEAL_DAYS = [
     {slot:"Dinner", items:"2 roti, egg curry (2 eggs), palak sabzi, 1 bowl curd", cal:646,p:30,c:62,f:31, dish:"Egg curry"} ]},
   { day:"Day 7", style:"Veg + Egg", meals:[
     {slot:"Breakfast", items:"Vegetable daliya (60g), 150g curd, 6 almonds, 4 boiled egg whites, 1 banana", cal:535,p:28,c:78,f:10, dish:"Vegetable daliya"},
-    {slot:"Mid-Morning", items:"Paneer sandwich (2 toast, 60g paneer, veggies) + 200ml milk", cal:435,p:24,c:39,f:20, dish:null},
+    {slot:"Mid-Morning", items:"Paneer sandwich (2 toast, 60g paneer, veggies) + 200ml milk", cal:435,p:24,c:39,f:20, dish:"Paneer sandwich"},
     {slot:"Lunch", items:"1.5 cup rice, 1 cup sambar, soya chunk curry (50g dry), 1 bowl curd, salad", cal:810,p:46,c:125,f:13, dish:"Sambar"},
     {slot:"Evening", items:"200g hung curd + 3 dates + 20g roasted peanuts + 1 banana", cal:438,p:22,c:56,f:18, dish:null},
     {slot:"Dinner", items:"3 roti, tofu & vegetable curry (150g tofu), 1 bowl curd", cal:705,p:39,c:75,f:30, dish:"Tofu curry"} ]}
 ];
 
 const GROCERY = [
-  { cat:"Protein (all from food)", items:["Eggs — 4 dozen/week (some meals use whites; 2 whites ≈ 1 whole egg)","Chicken breast, boneless — 600g","Fish fillet (rohu/basa) — 250g","Paneer — 400g","Tofu (firm) — 200g","Soya chunks — 250g","Curd/Dahi — 3 kg (part of it hung overnight for the hung-curd snacks)","Toned milk — 1.5 L","Sattu powder — 100g"] },
+  { cat:"Protein (all from food)", items:["Eggs — 4 dozen/week (some meals use whites; 2 whites ≈ 1 whole egg)","Chicken breast, boneless — 600g","Paneer — 400g","Tofu (firm) — 200g","Soya chunks — 250g","Curd/Dahi — 3 kg (part of it hung overnight for the hung-curd snacks)","Toned milk — 1.5 L","Sattu powder — 100g"] },
   { cat:"Carbs", items:["Rice — 1 kg","Multigrain atta — 1.5 kg","Multigrain bread — 1 small loaf","Rolled oats — 250g","Broken wheat (daliya) — 250g","Bananas — 14","Dates — 12","Besan — 250g","Sweet potato — 1 kg (optional, for air-fried wedges)"] },
   { cat:"Legumes", items:["Moong/toor dal — 500g","Rajma — 100g","Chole/kabuli chana — 100g","Roasted chana — 150g","Sprouts (moong/matki) — 400g","Whole urad (for dal makhani) — 100g"] },
   { cat:"Fats & Nuts", items:["Peanuts — 150g","Peanut butter — 1 small jar","Almonds — 50g","Groundnut/mustard oil — 500ml","Ghee — 100g"] },
@@ -331,7 +331,7 @@ const GROCERY = [
   { cat:"Gut-friendly extras", items:["Ajwain & jeera (for digestion)","Chia/flax seeds — 100g (soak, don't overdo)","Isabgol/psyllium husk — 1 pack (only if needed)"] }
 ];
 
-const APP_VERSION = "2026-10-06.1";
+const APP_VERSION = "2026-10-09.1";
 /* ---------------- WINTER ARC CALENDAR ---------------- */
 const WINTER_START = "2026-10-05";   // Monday — week 1 of 12
 const WINTER_WEEKS = 12;
@@ -860,6 +860,18 @@ const RECIPE_VIDEO_IDS = {
   "Air fryer fish tikka": "STEa2chabbM",
   "Air fryer soya chaap tikka": "_BlNDcaUKWs",
   "Air fryer sprouts tikki": "rBznLUlAzso",
+  "Soya chunk pulao": "jy2zjZnLvc4",
+  "Egg fried rice": "mAxuAOWNbeE",
+  "Vegetable khichdi": "IAWf15qENT0",
+  "Chicken pulao": "cMjrqX2dTfo",
+  "Pesarattu": "CL2vf1h1LU4",
+  "Egg dosa": "Qdnz2jQI1fQ",
+  "Masala oats": "foe-Y1-DLmA",
+  "Paneer sandwich": "c2b5gwHdGgA",
+  "Chicken fried rice": "GmWb7W7m2vs",
+  "Paneer rice bowl": "uyeDccHg0Zw",
+  "Air fryer chicken malai tikka": "l61HzKVh6bg",
+  "Air fryer chicken seekh kebab": "S5faHa1AVG4",
 };
 
 function slugify(s){ return s.replace(/[^a-zA-Z0-9]/g,""); }
@@ -1216,6 +1228,21 @@ function renderWorkout(){
   return html;
 }
 
+const DINNER_SWAPS = [
+  {name:"Soya chunk pulao", style:"Veg", items:"1.5 cup rice cooked with 60g dry soya chunks + veggies, 1 bowl curd", cal:700,p:45,c:90,f:15, dish:"Soya chunk pulao"},
+  {name:"Egg fried rice", style:"Egg", items:"1.5 cup rice, 3 eggs, mixed veggies, 1 tsp oil, 1 bowl curd", cal:720,p:36,c:88,f:24, dish:"Egg fried rice"},
+  {name:"Vegetable khichdi + eggs", style:"Egg", items:"1.5 cup moong dal khichdi with veggies, 2 boiled eggs, 1 bowl curd", cal:650,p:32,c:88,f:18, dish:"Vegetable khichdi"},
+  {name:"Chicken pulao", style:"Non-veg", items:"1.5 cup rice cooked with 120g chicken, cucumber raita", cal:760,p:45,c:95,f:18, dish:"Chicken pulao"},
+  {name:"Chicken fried rice", style:"Non-veg", items:"1.5 cup rice, 120g chicken, 1 egg, veggies, 1 tsp oil", cal:780,p:52,c:90,f:20, dish:"Chicken fried rice"},
+  {name:"Pesarattu with paneer", style:"Veg", items:"3 moong dal dosas stuffed with 50g paneer, ginger chutney, 1 bowl curd", cal:640,p:38,c:70,f:20, dish:"Pesarattu"},
+  {name:"Egg dosa", style:"Egg", items:"2 dosas with 2 eggs each, sambar, 1 bowl curd", cal:700,p:36,c:70,f:28, dish:"Egg dosa"},
+  {name:"Savoury masala oats + eggs", style:"Egg", items:"80g oats cooked masala-style with veggies, 3-egg bhurji, 1 glass milk", cal:690,p:42,c:70,f:24, dish:"Masala oats"},
+  {name:"Paneer sandwich (2)", style:"Veg", items:"4 multigrain toast, 100g paneer, veggies, 1 glass milk", cal:700,p:38,c:72,f:26, dish:"Paneer sandwich"},
+  {name:"Paneer rice bowl", style:"Veg", items:"1.5 cup rice, 120g paneer sautéed with veggies, 1 bowl curd", cal:780,p:40,c:88,f:28, dish:"Paneer rice bowl"},
+  {name:"Air-fried chicken tikka plate", style:"Non-veg", items:"150g air-fried chicken tikka, 1 cup rice, 1 cup dal, salad", cal:700,p:58,c:80,f:12, dish:"Air fryer chicken tikka"},
+  {name:"Seekh kebab plate", style:"Non-veg", items:"4 air-fried chicken seekh kebabs (150g mince), 1 cup rice, salad, 1 bowl curd", cal:650,p:52,c:62,f:18, dish:"Air fryer chicken seekh kebab"}
+];
+
 function renderMeals(){
   let html = "";
   MEAL_DAYS.forEach(d=>{
@@ -1239,6 +1266,23 @@ function renderMeals(){
     });
     html += `</div></div>`;
   });
+  html += `<div class="day-card">
+      <div class="day-card-head meals-head">
+        <div><div class="day-name">🍚 Dinner swaps — no roti</div><div class="item-sub">Replace any day's dinner with one of these</div></div>
+      </div>
+      <div class="day-body">`;
+  DINNER_SWAPS.forEach((m,i)=>{
+    const uid = "swap-"+i;
+    const vid = (m.dish && RECIPE_VIDEO_IDS[m.dish]) ? `<a class="video-link" href="javascript:void(0)" onclick="toggleVideo('${uid}','${m.dish}')">▶ Watch recipe</a>
+        <div id="vidbox-${uid}" style="display:none;"></div>` : "";
+    html += `<div class="meal-slot">
+        <div class="meal-slot-name" style="color:#7A9E85">${m.name} · ${m.style}</div>
+        <div class="meal-slot-items">${m.items}</div>
+        <div class="meal-slot-macro">${m.cal}kcal · P${m.p} C${m.c} F${m.f}</div>
+        ${vid}
+      </div>`;
+  });
+  html += `</div></div>`;
   html += `<div class="note-block">All protein now comes from food — no powders. Daily protein lands around 155–165g, and every number here is an estimate (real portions and brands vary by roughly ±10%). This 7-day cycle repeats every week. Egg swap: 2 egg whites ≈ 1 whole egg in protein, so if you'd rather not waste yolks, swap them (adds ~5g fat per egg). Every 4 weeks, if your weight isn't trending up, add 100–150 kcal (an extra roti, rice, or banana). For gut comfort: 1 bowl curd/buttermilk daily, chew slowly, and drink 3.5–4L water daily to prevent constipation and fissures on a higher-protein diet.</div>`;
   return html;
 }
@@ -1503,7 +1547,7 @@ const AIR_FRYER = [
     note:"Chicken is done when the inside reaches 74°C and no pink remains — breast dries out fast, so don't overshoot." },
   { cat:"Chicken", name:"Hariyali (green) chicken tikka", protein:"~32g protein per 100g chicken", temp:"190–200°C", time:"12–14 min", dish:"Air fryer hariyali chicken tikka",
     steps:"Blend mint, coriander, green chilli, ginger-garlic and lemon with hung curd. Marinate cubed chicken breast for at least 30 min (overnight is better). Single layer, light oil spray, turn halfway." },
-  { cat:"Chicken", name:"Chicken malai tikka (lighter)", protein:"~30g protein per 100g chicken", temp:"180–190°C", time:"12–15 min", dish:null,
+  { cat:"Chicken", name:"Chicken malai tikka (lighter)", protein:"~30g protein per 100g chicken", temp:"180–190°C", time:"12–15 min", dish:"Air fryer chicken malai tikka",
     steps:"Marinate chicken in thick hung curd, ginger-garlic, white pepper, cardamom and a spoon of cashew paste. Single layer, turn once — it should come out pale golden with light spotting, not dark char.",
     note:"Skip the heavy cream to keep the fat down." },
   { cat:"Chicken", name:"Tandoori chicken legs", protein:"~25–30g protein per 2 skinless drumsticks", temp:"190°C", time:"20–25 min", dish:"Air fryer tandoori chicken",
@@ -1512,7 +1556,7 @@ const AIR_FRYER = [
   { cat:"Chicken", name:"Chicken 65 (dry)", protein:"~28g protein per 100g chicken", temp:"200°C", time:"10–12 min", dish:"Air fryer chicken 65",
     steps:"Marinate chicken pieces in ginger-garlic, chilli, curd, a spoon of cornflour and spices for 30 min. Air fry in a single layer, shaking halfway, then toss with curry leaves and green chilli lightly sautéed in 1 tsp oil.",
     note:"Keep the cornflour light — it stays crisp without adding much." },
-  { cat:"Chicken", name:"Chicken keema kebabs", protein:"~25g protein per 100g", temp:"190°C", time:"12–15 min", dish:null,
+  { cat:"Chicken", name:"Chicken keema kebabs", protein:"~25g protein per 100g", temp:"190°C", time:"12–15 min", dish:"Air fryer chicken seekh kebab",
     steps:"Mix minced chicken with ginger-garlic, spices and chopped coriander, shape into seekh/patties, light oil, turn halfway." },
   { cat:"Chicken", name:"Whole roast chicken", protein:"~25g protein per 100g meat (skin off)", temp:"180°C", time:"40–50 min (about 1 kg bird)", dish:null,
     steps:"Only if the whole bird fits in your basket with room around it. Marinate overnight, pat dry, start breast-side down and flip halfway.",
